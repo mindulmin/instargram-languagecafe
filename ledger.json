@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "lock": null,
+  "actions": [],
+  "migration": {
+    "importedAt": "2026-09-08T04:48:27.437Z",
+    "files": 82,
+    "encryptedSha256": "f8bab5db808abd52862cc30bfa2011a3fd60aa513ac7a1a90003992c4f371e19"
+  }
+}
