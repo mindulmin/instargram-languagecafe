@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.2",
+  "testId": "language-cafe-14d-2026-09-04",
+  "asOfDate": "2026-09-05",
+  "timezone": "Asia/Seoul",
+  "period": {
+    "day1": "2026-09-04",
+    "day8": "2026-09-11",
+    "day14": "2026-09-17"
+  },
+  "strategy": {
+    "primaryChannel": "instagram",
+    "primaryJob": "korean_expression_learning",
+    "threadsRole": "native_study_companion_with_source_link",
+    "threadsStrategyVersion": "instagram-study-companion-link-v2",
+    "instagramRequiredBeforeThreads": true,
+    "threadsExternalLinkRequired": true,
+    "threadsExternalLinkCount": 1,
+    "threadsLinkTargetType": "source_instagram_permalink",
+    "threadsLinkTargetBinding": "derive_exactly_from_official_instagram_readback",
+    "threadsLinkPosition": "final_line",
+    "threadsExplicitLinkAttachmentAllowed": false,
+    "threadsPlatformPreviewState": "unavailable_platform_managed",
+    "threadsProductOrPriceCopyAllowed": false,
+    "threadsSalesCtaAllowed": false,
+    "threadsStudyCtaPrefix": "Review the full visual lesson on Instagram →"
+  },
+  "publishing": {
+    "status": "blocked_content",
+    "statusReasonCode": "no_new_handoff_ready_source_day2",
+    "postDue": false,
+    "maxPosts": 3,
+    "publishedCount": 1,
+    "approvalRequired": false,
+    "approvalItems": [],
+    "authorizationScope": "existing_language_cafe_instagram_carousel_and_paired_threads_text_workflow_only"
+  },
+  "handoff": {
+    "contractVersion": "1.2",
+    "consumerAction": "stop",
+    "reason": "day2_no_handoff_ready_source_and_pair_not_due",
+    "actionId": null,
+    "idempotencyKey": null,
+    "issuedAt": null,
+    "validUntil": null,
+    "requestedPostId": null,
+    "targetExpression": null,
+    "threadsLinkTargetType": "source_instagram_permalink",
+    "threadsLinkTarget": null,
+    "supersedesJobId": null,
+    "recoveryEvidencePath": null,
+    "recoveryEvidenceSha256": null,
+    "receiptPathPattern": "C:\\Users\\earth\\OneDrive\\Desktop\\codex\\instagram-card-test\\meaning-switch-series-v1\\operations\\revenue-experiment\\<testId>\\publisher-receipts\\<actionId>.json",
+    "mayCreateMedia": false,
+    "mayPublish": false,
+    "requiredReceiptFields": [
+      "actionId",
+      "idempotencyKey",
+      "targetExpression",
+      "sourcePostId",
+      "instagram",
+      "threads",
+      "threadsLinkTargetType",
+      "threadsLinkTarget",
+      "threadsExternalLinkCount",
+      "threadsExplicitLinkAttachmentRequested",
+      "threadsPlatformPreviewState",
+      "reelActionCount",
+      "finalStatus",
+      "evidencePath"
+    ]
+  }
+}

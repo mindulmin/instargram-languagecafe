@@ -1,0 +1,49 @@
+{
+  "private": true,
+  "scripts": {
+    "export": "node export-cards.cjs",
+    "record-status": "node record-status.cjs",
+    "review-copy": "node review-copy.cjs",
+    "preflight": "node carousel-pipeline.cjs",
+    "approve-job": "node approve-carousel-job.cjs",
+    "publish-job": "node carousel-pipeline.cjs --publish",
+    "hosting:status": "wrangler whoami",
+    "hosting:login": "wrangler login",
+    "hosting:create": "wrangler pages project create language-cafe-instagram-assets --production-branch main",
+    "hosting:test": "node --test public-image-hosting.test.cjs",
+    "publish-safety:test": "node --test publish-safety.test.cjs",
+    "hosting:deploy-job": "node deploy-public-image-hosting.cjs",
+    "render-reel-test": "powershell -ExecutionPolicy Bypass -File make-reel-test.ps1",
+    "review-reel-test": "node review-reel.cjs",
+    "render-card-reel": "node export-reel-cards.cjs && powershell -ExecutionPolicy Bypass -File make-card-reel-v2.ps1",
+    "review-card-reel": "node review-reel.cjs --file reels/card-reel-v2/meaning-switch-01-card-reel-v2.mp4 --report reels/card-reel-v2/reel-review-report.json",
+    "prepare-card-carousel-reel": "node create-card-carousel-reel-handoff.cjs",
+    "workstation": "node workstation/server.cjs",
+    "service-db": "node -e \"const store=require('./service/data-store.cjs'); console.log({ databasePath: store.databasePath, workspaces: store.listWorkspaces() });\"",
+    "render-animated-card-reel": "node render-reel-pop-badge.cjs && powershell -ExecutionPolicy Bypass -File make-card-reel-v3.ps1",
+    "review-animated-card-reel": "node review-reel.cjs --file reels/card-reel-v3/meaning-switch-01-animated-card-reel.mp4 --report reels/card-reel-v3/reel-review-report.json --label \"Animated card Reel prototype: meaning-switch-01\"",
+    "render-motion-card-reel": "node render-motion-reel-v4.cjs && powershell -ExecutionPolicy Bypass -File make-motion-reel-v4.ps1",
+    "review-motion-card-reel": "node review-reel.cjs --file reels/motion-card-reel-v4/meaning-switch-01-motion-card-reel.mp4 --report reels/motion-card-reel-v4/reel-review-report.json --max-duration 35 --label \"Frame-rendered motion card Reel: meaning-switch-01\"",
+    "make-reel-bgm": "powershell -ExecutionPolicy Bypass -File make-original-bgm.ps1 && powershell -ExecutionPolicy Bypass -File mix-reel-bgm.ps1",
+    "review-reel-bgm": "node review-reel.cjs --file reels/motion-card-reel-v4/meaning-switch-01-motion-card-reel-bgm.mp4 --report reels/motion-card-reel-v4/reel-bgm-review-report.json --max-duration 35 --label \"Motion Reel with original calm BGM: meaning-switch-01\"",
+    "publish-reel": "node publish-reel.cjs --publish",
+    "select-daily-expression": "node content-queue/daily-content-selector.cjs",
+    "test:daily-selector": "node --test content-queue/daily-content-selector.test.cjs",
+    "prepare-threads-draft": "node content-queue/threads/prepare-threads-draft.cjs",
+    "review-threads-draft": "node content-queue/threads/prepare-threads-draft.cjs --validate",
+    "test:threads-draft": "node --test content-queue/threads/prepare-threads-draft.test.cjs",
+    "publish-threads": "node content-queue/threads/publish-threads.cjs",
+    "test:threads-publish": "node --test content-queue/threads/publish-threads.test.cjs",
+    "collect-threads-insights": "node content-queue/threads/collect-threads-insights.cjs",
+    "test:threads-insights": "node --test content-queue/threads/collect-threads-insights.test.cjs",
+    "review-video-bot": "node video-review-bot.cjs",
+    "test:cloud": "node --test cloud/cloud.test.cjs publish-safety.test.cjs public-image-hosting.test.cjs character-identity-lock.test.cjs carousel-pipeline-media-request.test.cjs content-queue/threads/prepare-threads-draft.test.cjs content-queue/threads/publish-threads.test.cjs"
+  },
+  "dependencies": {
+    "playwright": "^1.53.0",
+    "sharp": "0.35.4"
+  },
+  "devDependencies": {
+    "wrangler": "^4.110.0"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "requiredReview": {
+    "hangulFirstConfirmed": true,
+    "englishBridgeConfirmed": true,
+    "instructionLanguageConfirmed": true,
+    "nonDialogueKoreanDetected": false,
+    "romanizationLimited": true,
+    "pronunciationGuidanceConfirmed": true,
+    "review": "passed"
+  },
+  "rules": [
+    "Show the Korean line in Hangul before any romanization.",
+    "Use short natural English for every visible explanation, meaning note, grammar or politeness rule, practice instruction, and CTA guidance.",
+    "Allow Hangul on cards only for what the learner hears or says, the exact target phrase or its Korean components, and limited pronunciation practice. Do not write learner-facing explanations in Korean.",
+    "Use romanization only as a pronunciation aid and never as the only way to read the lesson.",
+    "Teach polite everyday Korean by default and name any speech-level contrast explicitly.",
+    "Do not assume Korean cultural knowledge or address a Korean-only audience."
+  ],
+  "reviewQuestions": [
+    "Can an English-speaking beginner understand every explanation and instruction without reading Korean?",
+    "Does every visible Hangul string belong to real dialogue, the target phrase, a phrase component, or pronunciation practice?",
+    "Does Hangul remain more prominent than romanization?",
+    "Is every Korean line natural in the stated real-life scene?",
+    "Is the pronunciation help useful without pretending to replace listening practice?"
+  ]
+}

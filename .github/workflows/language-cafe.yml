@@ -1,0 +1,96 @@
+name: Language Cafe scheduled publisher
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 09:00 Asia/Seoul; GitHub scheduling may be delayed.
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'preflight checks only; publish consumes one valid release'
+        type: choice
+        options: [preflight, publish]
+        default: preflight
+
+concurrency:
+  group: language-cafe-publisher
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publisher:
+    if: github.repository == 'mindulmin/instargram-languagecafe' && github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 50
+    permissions:
+      contents: write # Atomic encrypted checkpoints on the cloud-state branch.
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restore encrypted state and check the release
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LANGUAGE_CAFE_STATE_KEY: ${{ secrets.LANGUAGE_CAFE_STATE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          INSTAGRAM_SESSION_JSON: ${{ secrets.INSTAGRAM_SESSION_JSON }}
+          THREADS_SESSION_JSON: ${{ secrets.THREADS_SESSION_JSON }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          RUN_MODE: ${{ inputs.mode || 'publish' }}
+        run: node cloud/runner.cjs prepare
+      - name: Install publisher runtime
+        if: steps.prepare.outputs.run_agent == 'true'
+        working-directory: C:\Users\earth\OneDrive\Desktop\codex\instagram-card-test\meaning-switch-series-v1
+        run: |
+          npm ci --ignore-scripts
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npx playwright install chromium
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m pip install -r cloud/requirements.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run test:cloud
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Produce and publish one authorized learning pair
+        id: agent
+        if: steps.prepare.outputs.run_agent == 'true'
+        uses: openai/codex-action@v1
+        env:
+          LANGUAGE_CAFE_CLOUD: '1'
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PAGES_PROJECT: language-cafe-instagram-assets
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: cloud/publisher-prompt.md
+          output-file: cloud/results/agent-summary.md
+          working-directory: C:\Users\earth\OneDrive\Desktop\codex\instagram-card-test\meaning-switch-series-v1
+          safety-strategy: unsafe # Required by the official action on a fresh Windows VM.
+          sandbox: danger-full-access
+          codex-args: '["--skip-git-repo-check"]'
+      - name: Checkpoint outcomes or retain the unresolved lock
+        if: always() && steps.prepare.outputs.run_agent == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LANGUAGE_CAFE_STATE_KEY: ${{ secrets.LANGUAGE_CAFE_STATE_KEY }}
+          AGENT_OUTCOME: ${{ steps.agent.outcome }}
+        run: node cloud/runner.cjs finalize
+      - name: Preserve the compact run report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: language-cafe-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            cloud/results/preflight.json
+            cloud/results/checkpoint.json
+          if-no-files-found: ignore
+          retention-days: 30
