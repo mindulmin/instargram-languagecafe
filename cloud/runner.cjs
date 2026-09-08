@@ -14,7 +14,7 @@ function output(key, value) { if (process.env.GITHUB_OUTPUT) fs.appendFileSync(p
 function summarize(result) {
   write(path.join(RESULTS, 'preflight.json'), result);
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
-    `## Language Cafe cloud publisher\n\nStatus: **${result.status}**\n\n${(result.errors || []).map(e => '- ' + e).join('\n')}\n\nSocial API calls in preflight: 0. New Reels: 0.\n`);
+    `## Language Cafe cloud publisher\n\nStatus: **${result.status}**\n\n${(result.errors || []).map(e => '- ' + e).join('\n')}\n\nMissing repository secrets: ${(result.missingSecrets || []).join(', ') || 'none'}.\n\nControl date: ${result.sourceDate || 'unavailable'}. Post due: ${result.postDue === true}.\n\nSocial API calls in preflight: 0. New Reels: 0.\nA successful infrastructure check does not mean a social post was published.\n`);
   console.log(JSON.stringify(result));
 }
 function hostedOnly() {
