@@ -23,6 +23,10 @@ Set these in Settings → Secrets and variables → Actions:
 
 Do not copy the whole local Codex auth directory or a personal GitHub token into the runtime. The workflow uses its short-lived `github.token` only during state read/write steps. Session renewals must be reflected in the repository secrets before they expire. The snapshot does not include private credentials.
 
+## Read-only Cloudflare connection check
+
+The workflow first calls the official Cloudflare Pages project GET endpoint using the repository secrets. `project_read_verified` proves authenticated read access to the existing project, not deployment success or write permission. The check never deploys and does not output API response bodies or credentials. A failed connection check stops the run before any publication claim.
+
 ## State and interruption handling
 
 `cloud-state` contains `ledger.json` and authenticated encrypted `publisher-state.enc`. State restoration fails closed if the branch, ciphertext, key or expected files are missing or invalid. Publication claims are committed atomically to the state branch and verified before platform credentials are written or an agent starts. Concurrent commits cannot overwrite one another.

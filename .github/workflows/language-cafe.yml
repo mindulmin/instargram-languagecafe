@@ -35,6 +35,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify Cloudflare project access without deploying
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node cloud/check-cloudflare.cjs
       - name: Restore encrypted state and check the release
         id: prepare
         env:
@@ -90,6 +95,7 @@ jobs:
         with:
           name: language-cafe-report-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            cloud/results/cloudflare-check.json
             cloud/results/preflight.json
             cloud/results/checkpoint.json
           if-no-files-found: ignore

@@ -8,6 +8,39 @@ const { GitHubState } = require('./github-state.cjs');
 const { evaluate } = require('./gates.cjs');
 const { verifiedPair } = require('./runner.cjs');
 const key = 'a'.repeat(64);
+const { checkCloudflare } = require('./check-cloudflare.cjs');
+test('Cloudflare check uses only GET on the fixed project and does not disclose secrets', async () => {
+  const env = { CLOUDFLARE_API_TOKEN: 'private-token', CLOUDFLARE_ACCOUNT_ID: 'b'.repeat(32) };
+  const result = await checkCloudflare(env, async (url, options) => {
+    assert.equal(url, `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/pages/projects/language-cafe-instagram-assets`);
+    assert.equal(options.method, 'GET');
+    assert.equal(options.redirect, 'error');
+    assert.equal(options.headers.Authorization, 'Bearer private-token');
+    return { ok: true, status: 200, json: async () => ({ success: true, result: { name: 'language-cafe-instagram-assets', secret: 'private-token' } }) };
+  });
+  assert.equal(result.status, 'project_read_verified');
+  assert.equal(result.deploymentsCreated, 0);
+  assert.equal(result.writePermissionVerified, false);
+  assert.ok(!JSON.stringify(result).includes('private-token'));
+});
+test('Cloudflare check fails closed for missing credentials and malformed account IDs', async () => {
+  const request = () => { throw Error('must not call'); };
+  assert.equal((await checkCloudflare({}, request)).status, 'blocked_missing_credentials');
+  assert.equal((await checkCloudflare({ CLOUDFLARE_API_TOKEN: 'token', CLOUDFLARE_ACCOUNT_ID: '../bad' }, request)).status, 'blocked_account_id_format');
+});
+test('Cloudflare check fails closed for denied, wrong-project, malformed, and network responses', async () => {
+  const env = { CLOUDFLARE_API_TOKEN: 'private-token', CLOUDFLARE_ACCOUNT_ID: 'b'.repeat(32) };
+  for (const response of [
+    { ok: false, status: 403, json: async () => ({ errors: ['private-token'] }) },
+    { ok: true, status: 200, json: async () => ({ success: true, result: { name: 'wrong-project' } }) },
+    { ok: true, status: 200, json: async () => { throw Error('private-token'); } },
+  ]) {
+    const result = await checkCloudflare(env, async () => response);
+    assert.notEqual(result.status, 'project_read_verified');
+    assert.ok(!JSON.stringify(result).includes('private-token'));
+  }
+  assert.equal((await checkCloudflare(env, async () => { throw Error('private-token'); })).status, 'blocked_network_or_response');
+});
 const now = new Date('2026-09-08T00:00:00Z');
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lc-cloud-test-'));
