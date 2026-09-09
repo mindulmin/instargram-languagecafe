@@ -28,6 +28,13 @@ test('Cloudflare check fails closed for missing credentials and malformed accoun
   assert.equal((await checkCloudflare({}, request)).status, 'blocked_missing_credentials');
   assert.equal((await checkCloudflare({ CLOUDFLARE_API_TOKEN: 'token', CLOUDFLARE_ACCOUNT_ID: '../bad' }, request)).status, 'blocked_account_id_format');
 });
+test('Cloudflare errors expose only numeric codes including nested auth causes', async () => {
+  const result = await checkCloudflare({ CLOUDFLARE_API_TOKEN: 'private-token', CLOUDFLARE_ACCOUNT_ID: 'b'.repeat(32) }, async () => ({
+    ok: false, status: 400, json: async () => ({ errors: [{ code: 6003, message: 'private-token', error_chain: [{ code: 6111, message: 'private-token' }, { code: 'private-token' }] }] }),
+  }));
+  assert.deepEqual(result.errorCodes, [6003, 6111]);
+  assert.ok(!JSON.stringify(result).includes('private-token'));
+});
 test('Cloudflare check fails closed for denied, wrong-project, malformed, and network responses', async () => {
   const env = { CLOUDFLARE_API_TOKEN: 'private-token', CLOUDFLARE_ACCOUNT_ID: 'b'.repeat(32) };
   for (const response of [

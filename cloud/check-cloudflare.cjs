@@ -16,7 +16,16 @@ async function checkCloudflare(env = process.env, request = fetch) {
     });
     const body = await response.json();
     const matched = response.ok && body.success === true && body.result?.name === PROJECT;
-    return { ...base, status: matched ? 'project_read_verified' : 'blocked_project_access', httpStatus: response.status };
+    const errorCodes = [];
+    const collectCodes = errors => {
+      if (!Array.isArray(errors)) return;
+      for (const error of errors) {
+        if (Number.isSafeInteger(error?.code)) errorCodes.push(error.code);
+        collectCodes(error?.error_chain);
+      }
+    };
+    collectCodes(body?.errors);
+    return { ...base, status: matched ? 'project_read_verified' : 'blocked_project_access', httpStatus: response.status, errorCodes };
   } catch {
     return { ...base, status: 'blocked_network_or_response' };
   }
