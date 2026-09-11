@@ -90,7 +90,7 @@ async function runStory(root, control) {
   try {
     const hosting = require('../public-image-hosting.cjs');
     await persist({ phase: 'hosting_auth_read' });
-    await hosting.runWrangler(['whoami']);
+    await require('./hosting-access.cjs').verifyHostingAccess(hosting.runWrangler);
     const stage = path.join(root, 'exports', job.id, 'story-site');
     fs.mkdirSync(stage, { recursive: true }); fs.copyFileSync(imageFile, path.join(stage, 'story.jpg'));
     await persist({ phase: 'hosting_deploy' });

@@ -1,6 +1,17 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { numericMetric, storyReviewErrors, publishStoryOnce, insights } = require('./growth.cjs');
+test('scoped hosting token can use verified project read without account-wide permissions', async () => {
+  const { verifyHostingAccess } = require('./hosting-access.cjs');
+  const env = { CLOUDFLARE_API_TOKEN: 'private', CLOUDFLARE_ACCOUNT_ID: 'a'.repeat(32) };
+  const deniedWhoami = async () => { throw Error('account listing denied'); };
+  const r = await verifyHostingAccess(deniedWhoami, env, async (_, options) => {
+    assert.equal(options.method, 'GET');
+    return { ok: true, status: 200, json: async () => ({ success: true, result: { name: 'language-cafe-instagram-assets' } }) };
+  });
+  assert.equal(r.status, 'scoped_project_read_verified_account_listing_unavailable');
+  await assert.rejects(verifyHostingAccess(deniedWhoami, env, async () => ({ ok: false, status: 403, json: async () => ({ success: false }) })), /not_verified/);
+});
 test('insights permission failures retain a sanitized reason rather than a false zero', async () => {
   const result = await insights({ accountId: '123', accessToken: 'never-log-me', graphVersion: 'v25.0' },
     { media: [{ id: '456', media_type: 'CAROUSEL_ALBUM', timestamp: '2026-09-11T00:00:00Z' }] },
@@ -64,4 +75,17 @@ test('manual reconciliation requires the exact original claim and immutable cont
   assert.throws(() => reconciliationControl(state, { ...lock, actionId: 'different' }), /identity mismatch/);
   assert.throws(() => reconciliationControl(state, { ...lock, controlSha256: '0'.repeat(64) }), /control bytes/);
   assert.throws(() => reconciliationControl(state, { ...lock, requestedPostId: '../escape' }), /reviewable/);
+});
+test('one-time Story completion cannot resolve any container attempt or changed checkpoint', () => {
+  const { unstartedStoryResolution } = require('./runner.cjs');
+  const remote = { sha: '4008bb26d8c79344939a26b9d29dcbcd0faa4a1c', ledger: { lock: null,
+    lastRun: { runId: '34580004117', status: 'published_learning_pair_exactly_once', storyStatus: 'story_blocked_no_retry' },
+    actions: [{ runId: '34578937471', requestedPostId: '2026-09-11-expression-045-cloud' }] } };
+  const p = 'operations/growth/2026-09-11-expression-045-cloud/story-lock.json';
+  const story = { status: 'story_blocked_no_retry', createAttempts: 0, publishAttempts: 0, reason: 'story_hosting_or_network_failed' };
+  const state = { files: { [p]: Buffer.from(JSON.stringify(story)).toString('base64') } };
+  assert.equal(unstartedStoryResolution(remote, state).lockPath, p);
+  assert.throws(() => unstartedStoryResolution({ ...remote, sha: 'changed' }, state), /Exact/);
+  state.files[p] = Buffer.from(JSON.stringify({ ...story, createAttempts: 1 })).toString('base64');
+  assert.throws(() => unstartedStoryResolution(remote, state), /may have started/);
 });

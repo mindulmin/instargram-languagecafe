@@ -1,6 +1,6 @@
 // Read-only diagnostic; never print whoami output (account/email) or credentials.
 const { runWrangler } = require('../public-image-hosting.cjs');
-runWrangler(['whoami']).then(() => console.log(JSON.stringify({ status: 'cloudflare_cli_read_verified', deploymentsCreated: 0 })))
+require('./hosting-access.cjs').verifyHostingAccess(runWrangler).then(result => console.log(JSON.stringify(result)))
   .catch(error => {
     let reason = error.message;
     for (const name of ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID']) {

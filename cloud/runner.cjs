@@ -115,14 +115,34 @@ function reconciliationControl(state, lock) {
   }
   return { bytes, control, jobPath: `jobs/${lock.requestedPostId}.json` };
 }
+function unstartedStoryResolution(remote, state) {
+  const jobId = '2026-09-11-expression-045-cloud';
+  if (remote.sha !== '4008bb26d8c79344939a26b9d29dcbcd0faa4a1c' || remote.ledger.lock
+    || remote.ledger.lastRun?.runId !== '34580004117' || remote.ledger.lastRun?.status !== 'published_learning_pair_exactly_once'
+    || remote.ledger.lastRun?.storyStatus !== 'story_blocked_no_retry') throw Error('Exact pre-API Story incident is not available');
+  const lockPath = `operations/growth/${jobId}/story-lock.json`;
+  const story = JSON.parse(Buffer.from(state.files[lockPath] || '', 'base64'));
+  if (story.status !== 'story_blocked_no_retry' || story.createAttempts !== 0 || story.publishAttempts !== 0
+    || story.containerId || story.mediaId || story.reason !== 'story_hosting_or_network_failed'
+    || Object.keys(state.files).some(p => p.startsWith(`exports/${jobId}/story-site/`))) throw Error('Story may have started; no retry');
+  // The reviewed run's code creates story-site only after whoami. No stage and zero
+  // API intents, plus the independently reproduced whoami permission error, resolve
+  // this specific account-listing failure before any Story upload or API request.
+  const claim = remote.ledger.actions.find(a => a.runId === '34578937471' && a.requestedPostId === jobId);
+  if (!claim) throw Error('Original verified lesson claim missing');
+  return { claim: { ...claim, status: 'needs_official_readback' }, lockPath,
+    archivePath: `operations/growth/${jobId}/pre-api-block-34580004117.json` };
+}
 async function reconcile() {
   // Manual readback-only pair resolution. Never creates/repeats Instagram or Threads.
   // A reviewed, never-attempted Story remains a separately authorized optional action.
   hostedOnly();
   const api = new GitHubState(process.env.GH_TOKEN), remote = await api.read();
   const state = decrypt(remote.encrypted, process.env.LANGUAGE_CAFE_STATE_KEY);
-  const original = reconciliationControl(state, remote.ledger.lock);
-  const failedRun = await api.api('actions/runs/' + remote.ledger.lock.runId);
+  const completion = process.env.RUN_MODE === 'complete-story' ? unstartedStoryResolution(remote, state) : null;
+  const sourceClaim = completion?.claim || remote.ledger.lock;
+  const original = reconciliationControl(state, sourceClaim);
+  const failedRun = await api.api('actions/runs/' + sourceClaim.runId);
   if (failedRun.status !== 'completed') throw Error('Original publishing run is not complete');
   if (fs.existsSync(RUNTIME)) throw Error('Canonical runner directory must start absent');
   const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: ROOT }).toString().split('\0').filter(Boolean);
@@ -133,27 +153,37 @@ async function reconcile() {
   }
   restore(RUNTIME, state);
   fs.mkdirSync(path.dirname(CONTROL), { recursive: true }); fs.writeFileSync(CONTROL, original.bytes);
-  write(path.join(RUNTIME, 'cloud-permit.json'), { ...remote.ledger.lock, remoteClaimSha: remote.sha, jobPath: original.jobPath });
+  write(path.join(RUNTIME, 'cloud-permit.json'), { ...sourceClaim, remoteClaimSha: remote.sha, jobPath: original.jobPath });
   for (const [channel, name] of [['instagram', 'INSTAGRAM_SESSION_JSON'], ['threads', 'THREADS_SESSION_JSON']]) {
     write(`C:/Users/earth/.codex/${channel}/session.json`, JSON.parse(process.env[name]));
   }
   if (!verifiedPair(RUNTIME, original.control) || !await require('./live-verification.cjs').verifyLivePair(RUNTIME, original.control)) {
     throw Error('Official exact-one pair not verified; original state and lock remain unchanged');
   }
+  if (completion) {
+    const { graph, session } = require('./official-read.cjs');
+    const s = session(process.env.INSTAGRAM_SESSION_JSON);
+    const stories = await graph(s, `${s.accountId}/stories`, { fields: 'id,timestamp', limit: 100 });
+    if (!Array.isArray(stories.data) || stories.data.length || stories.paging?.next) throw Error('Active Story evidence changed; no completion attempt');
+    fs.renameSync(path.join(RUNTIME, completion.lockPath), path.join(RUNTIME, completion.archivePath));
+  }
   let checkpointBase = remote;
   let story = { status: 'story_not_retried_without_proof_of_no_prior_attempt' };
-  const storyNeverEntered = remote.ledger.lastRun?.runId === remote.ledger.lock.runId
+  const storyNeverEntered = remote.ledger.lastRun?.runId === sourceClaim.runId
     && remote.ledger.lastRun?.storyStatus === 'story_skipped_pair_not_verified';
-  if (storyNeverEntered && !remote.ledger.storyReconciliationClaim) {
+  if (completion || (storyNeverEntered && !remote.ledger.storyReconciliationClaim)) {
     // Remote intent survives a runner crash even if a later local Story checkpoint is lost.
+    const intentKey = completion ? 'storyCompletionClaim' : 'storyReconciliationClaim';
     checkpointBase = await api.save(remote, { ...remote.ledger,
-      storyReconciliationClaim: { runId: process.env.GITHUB_RUN_ID, sourceJob: remote.ledger.lock.requestedPostId,
-        claimedAt: new Date().toISOString(), status: 'claimed_before_possible_story_write' } }, remote.encrypted);
+      [intentKey]: { runId: process.env.GITHUB_RUN_ID, sourceJob: sourceClaim.requestedPostId,
+        claimedAt: new Date().toISOString(), status: 'claimed_before_possible_story_write',
+        ...(completion ? { resolvedPreApiRun: '34580004117', proof: 'zero_api_intents_no_staging_files_no_active_stories', archivedLock: completion.archivePath } : {}) } },
+      completion ? encrypt(collect(RUNTIME, true), process.env.LANGUAGE_CAFE_STATE_KEY) : remote.encrypted);
     try { story = await require('./growth.cjs').runStory(RUNTIME, original.control); }
     catch { story = { status: 'story_blocked_validation_or_network' }; }
   }
   write(path.join(RESULTS, 'story.json'), story);
-  const audit = { runId: process.env.GITHUB_RUN_ID, originalPublishRunId: remote.ledger.lock.runId, completedAt: new Date().toISOString(),
+  const audit = { runId: process.env.GITHUB_RUN_ID, originalPublishRunId: sourceClaim.runId, completedAt: new Date().toISOString(),
     originalStateSha: remote.sha, status: 'published_learning_pair_exactly_once', verification: 'fresh_official_readback_including_full_caption_hashtags',
     pairPublishCalls: 0, storyStatus: story.status };
   write(path.join(RUNTIME, 'operations/cloud-controller/reconciliation', process.env.GITHUB_RUN_ID + '.json'), audit);
@@ -232,4 +262,4 @@ if (require.main === module) {
   Promise.resolve().then(() => command === 'prepare' ? prepare() : command === 'finalize' ? finalize() : command === 'reconcile' ? reconcile() : Promise.reject(new Error('Unknown runner command')))
     .catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { verifiedPair, reconciliationControl };
+module.exports = { verifiedPair, reconciliationControl, unstartedStoryResolution };

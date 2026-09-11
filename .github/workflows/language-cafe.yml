@@ -8,7 +8,7 @@ on:
       mode:
         description: 'preflight: infrastructure; controller-preview: select only; publish: full workflow; reconcile: verify existing pair and unattempted Story'
         type: choice
-        options: [preflight, controller-preview, publish, reconcile]
+        options: [preflight, controller-preview, publish, reconcile, complete-story]
         default: preflight
 
 concurrency:
@@ -67,7 +67,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Restore state and run the cloud content controller
         id: prepare
-        if: inputs.mode != 'reconcile'
+        if: inputs.mode != 'reconcile' && inputs.mode != 'complete-story'
         env:
           GH_TOKEN: ${{ github.token }}
           LANGUAGE_CAFE_STATE_KEY: ${{ secrets.LANGUAGE_CAFE_STATE_KEY }}
@@ -79,8 +79,9 @@ jobs:
           RUN_MODE: ${{ inputs.mode || 'publish' }}
         run: node cloud/runner.cjs prepare
       - name: Reconcile existing pair without repeating either post
-        if: inputs.mode == 'reconcile'
+        if: inputs.mode == 'reconcile' || inputs.mode == 'complete-story'
         env:
+          RUN_MODE: ${{ inputs.mode }}
           GH_TOKEN: ${{ github.token }}
           LANGUAGE_CAFE_STATE_KEY: ${{ secrets.LANGUAGE_CAFE_STATE_KEY }}
           INSTAGRAM_SESSION_JSON: ${{ secrets.INSTAGRAM_SESSION_JSON }}
