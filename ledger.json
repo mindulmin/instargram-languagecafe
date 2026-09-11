@@ -18,14 +18,14 @@
     "encryptedSha256": "f8bab5db808abd52862cc30bfa2011a3fd60aa513ac7a1a90003992c4f371e19"
   },
   "lastRun": {
-    "runId": "34580004117",
+    "runId": "34580676903",
     "originalPublishRunId": "34578937471",
-    "completedAt": "2026-09-11T08:37:25.251Z",
-    "originalStateSha": "5a73b1836cca81d92e62f9e07f9ff5c603459ca6",
+    "completedAt": "2026-09-11T08:45:50.671Z",
+    "originalStateSha": "4008bb26d8c79344939a26b9d29dcbcd0faa4a1c",
     "status": "published_learning_pair_exactly_once",
     "verification": "fresh_official_readback_including_full_caption_hashtags",
     "pairPublishCalls": 0,
-    "storyStatus": "story_blocked_no_retry"
+    "storyStatus": "published_story_exactly_once"
   },
   "abortedBeforeLaunch": [
     {
@@ -178,6 +178,16 @@
       "verification": "fresh_official_readback_including_full_caption_hashtags",
       "pairPublishCalls": 0,
       "storyStatus": "story_blocked_no_retry"
+    },
+    {
+      "runId": "34580676903",
+      "originalPublishRunId": "34578937471",
+      "completedAt": "2026-09-11T08:45:50.671Z",
+      "originalStateSha": "4008bb26d8c79344939a26b9d29dcbcd0faa4a1c",
+      "status": "published_learning_pair_exactly_once",
+      "verification": "fresh_official_readback_including_full_caption_hashtags",
+      "pairPublishCalls": 0,
+      "storyStatus": "published_story_exactly_once"
     }
   ],
   "storyCompletionClaim": {
