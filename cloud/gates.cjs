@@ -46,7 +46,7 @@ function evaluate(control, root, ledger, now = new Date()) {
   }
   const receipts = jsonFiles(path.join(root, 'operations/revenue-experiment', control.testId, 'publisher-receipts'))
     .map(file => JSON.parse(fs.readFileSync(file, 'utf8')));
-  const accepted = receipts.filter(r => ['published_learning_pair_exactly_once', 'instagram_published_threads_blocked'].includes(r.finalStatus));
+  const accepted = receipts.filter(r => ['published_learning_pair_exactly_once', 'instagram_published_threads_blocked', 'threads_companion_published_for_existing_instagram_exactly_once'].includes(r.finalStatus));
   if (accepted.length !== control.publishing.publishedCount) errors.push('cloud_published_count_not_reconciled');
   const identityFiles = [...jobs.map(j => j.file),
     ...jsonFiles(path.join(root, 'content-queue/threads/jobs')),

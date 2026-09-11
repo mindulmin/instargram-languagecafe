@@ -6,7 +6,7 @@ const zlib = require('node:zlib');
 const STATE_PATHS = [
   'jobs', 'tmp/publish-locks', 'content-queue/threads/jobs',
   'content-queue/threads/.publish-locks', 'content-queue/threads/recovery-evidence',
-  'operations/revenue-experiment', 'status-memory.json',
+  'operations/revenue-experiment', 'operations/cloud-controller', 'operations/growth', 'status-memory.json',
   'content-queue/korean-conversation-library.csv', 'content-queue/expression-library.csv',
   'content-queue/google-sheet-source.json', 'content-queue/comment-feedback-signals.json',
   'content-queue/status-memory.json', 'content-queue/threads/threads-exposure-experiment.json'

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "enabled": true,
+  "startsOn": "2026-09-04",
+  "maxPosts": 3,
+  "minimumGapHours": 72,
+  "releaseHours": 3,
+  "storiesEnabled": true,
+  "storyLimitPerPair": 1,
+  "authorization": "Owner requested cloud content selection, review, publication and Story distribution on 2026-09-11. No engagement bots, profile changes, ads or new Reels."
+}

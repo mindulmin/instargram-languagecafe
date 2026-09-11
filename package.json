@@ -37,7 +37,7 @@
     "collect-threads-insights": "node content-queue/threads/collect-threads-insights.cjs",
     "test:threads-insights": "node --test content-queue/threads/collect-threads-insights.test.cjs",
     "review-video-bot": "node video-review-bot.cjs",
-    "test:cloud": "node --test cloud/cloud.test.cjs publish-safety.test.cjs public-image-hosting.test.cjs character-identity-lock.test.cjs carousel-pipeline-media-request.test.cjs content-queue/threads/prepare-threads-draft.test.cjs content-queue/threads/publish-threads.test.cjs"
+    "test:cloud": "node --test cloud/*.test.cjs publish-safety.test.cjs public-image-hosting.test.cjs character-identity-lock.test.cjs carousel-pipeline-media-request.test.cjs content-queue/threads/prepare-threads-draft.test.cjs content-queue/threads/publish-threads.test.cjs"
   },
   "dependencies": {
     "playwright": "^1.53.0",

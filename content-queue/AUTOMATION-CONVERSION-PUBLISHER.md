@@ -13,6 +13,8 @@ The publisher reads only the controller's `strategy`, `publishing`, and `handoff
 
 ## Mandatory start order
 
+Cloud role clarification (owner request 2026-09-11): the trusted controller may read official history and the source Sheet/CSV and create an ephemeral metadata seed before issuing a release. This is source selection, not a passed copy/visual review. The restrictions below apply to the publishing agent consuming that release. The controller records no review approvals. The publisher must complete all production and review gates before posting. A separate trusted Story step may publish at most one reviewed Story only after this pair's two official readbacks; the pair publisher itself must not post Stories or new Reels.
+
 1. Read this contract, `AUTOMATION.md`, the existing Instagram copy/visual gates, and `content-queue/threads/THREADS-KOREAN-CONVERSATION-TEMPLATE.md`.
 2. Read `strategy`, `publishing`, and `handoff`, and validate only the learning-pair fields below. Do not import revenue or destination gates.
 3. Acquire the per-`actionId` execution lock, then re-read and revalidate the same handoff. An unreadable or existing unresolved lock blocks the run.
