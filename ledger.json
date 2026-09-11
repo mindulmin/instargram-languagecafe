@@ -179,5 +179,14 @@
       "pairPublishCalls": 0,
       "storyStatus": "story_blocked_no_retry"
     }
-  ]
+  ],
+  "storyCompletionClaim": {
+    "runId": "34580676903",
+    "sourceJob": "2026-09-11-expression-045-cloud",
+    "claimedAt": "2026-09-11T08:45:24.085Z",
+    "status": "claimed_before_possible_story_write",
+    "resolvedPreApiRun": "34580004117",
+    "proof": "zero_api_intents_no_staging_files_no_active_stories",
+    "archivedLock": "operations/growth/2026-09-11-expression-045-cloud/pre-api-block-34580004117.json"
+  }
 }
