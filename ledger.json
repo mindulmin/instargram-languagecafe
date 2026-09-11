@@ -1,15 +1,6 @@
 {
   "version": 1,
-  "lock": {
-    "runId": "34578937471",
-    "runAttempt": "1",
-    "actionId": "cloud-2026-09-11-expression-045",
-    "idempotencyKey": "cloud-2026-09-11-expression-045",
-    "controlSha256": "35f7660fd82a1f9dbe94ebd7ef8f99354274284fb1745755ef5795992aa7476f",
-    "requestedPostId": "2026-09-11-expression-045-cloud",
-    "claimedAt": "2026-09-11T08:24:14.308Z",
-    "status": "needs_official_readback"
-  },
+  "lock": null,
   "actions": [
     {
       "runId": "34578937471",
@@ -27,10 +18,14 @@
     "encryptedSha256": "f8bab5db808abd52862cc30bfa2011a3fd60aa513ac7a1a90003992c4f371e19"
   },
   "lastRun": {
-    "runId": "34578937471",
-    "completedAt": "2026-09-11T08:34:39.757Z",
-    "status": "blocked_ambiguous_or_incomplete",
-    "storyStatus": "story_skipped_pair_not_verified"
+    "runId": "34580004117",
+    "originalPublishRunId": "34578937471",
+    "completedAt": "2026-09-11T08:37:25.251Z",
+    "originalStateSha": "5a73b1836cca81d92e62f9e07f9ff5c603459ca6",
+    "status": "published_learning_pair_exactly_once",
+    "verification": "fresh_official_readback_including_full_caption_hashtags",
+    "pairPublishCalls": 0,
+    "storyStatus": "story_blocked_no_retry"
   },
   "abortedBeforeLaunch": [
     {
@@ -172,5 +167,17 @@
     "sourceJob": "2026-09-11-expression-045-cloud",
     "claimedAt": "2026-09-11T08:37:19.460Z",
     "status": "claimed_before_possible_story_write"
-  }
+  },
+  "reconciliations": [
+    {
+      "runId": "34580004117",
+      "originalPublishRunId": "34578937471",
+      "completedAt": "2026-09-11T08:37:25.251Z",
+      "originalStateSha": "5a73b1836cca81d92e62f9e07f9ff5c603459ca6",
+      "status": "published_learning_pair_exactly_once",
+      "verification": "fresh_official_readback_including_full_caption_hashtags",
+      "pairPublishCalls": 0,
+      "storyStatus": "story_blocked_no_retry"
+    }
+  ]
 }
