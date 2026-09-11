@@ -89,12 +89,15 @@ async function runStory(root, control) {
   const persist = async patch => { state = { ...state, ...patch }; fs.writeFileSync(lockFile, JSON.stringify(state, null, 2)); };
   try {
     const hosting = require('../public-image-hosting.cjs');
+    await persist({ phase: 'hosting_auth_read' });
     await hosting.runWrangler(['whoami']);
     const stage = path.join(root, 'exports', job.id, 'story-site');
     fs.mkdirSync(stage, { recursive: true }); fs.copyFileSync(imageFile, path.join(stage, 'story.jpg'));
+    await persist({ phase: 'hosting_deploy' });
     const deployed = await hosting.runWrangler(['pages', 'deploy', stage, '--project-name=language-cafe-instagram-assets', '--branch=main', '--commit-dirty=true'], { cwd: root });
     const base = hosting.parseDeploymentUrl(deployed.combined, 'language-cafe-instagram-assets');
     const imageUrl = `${base.replace(/\/$/, '')}/story.jpg`;
+    await persist({ phase: 'hosting_byte_readback' });
     const response = await fetch(imageUrl, { signal: AbortSignal.timeout(20000) });
     if (!response.ok || digest(Buffer.from(await response.arrayBuffer())) !== digest(bytes)) throw Error('story_hosted_bytes_mismatch');
     const api = async (method, object, fields) => {
