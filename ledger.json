@@ -1,26 +1,7 @@
 {
   "version": 1,
-  "lock": {
-    "runId": "34578531585",
-    "runAttempt": "1",
-    "actionId": "cloud-2026-09-11-expression-045",
-    "idempotencyKey": "cloud-2026-09-11-expression-045",
-    "controlSha256": "bc025c0b2aaab8f39ee45ca440930289a03fe80e6bda0921a3083e928181121e",
-    "requestedPostId": "2026-09-11-expression-045-cloud",
-    "claimedAt": "2026-09-11T08:19:17.703Z",
-    "status": "needs_official_readback"
-  },
-  "actions": [
-    {
-      "runId": "34578531585",
-      "runAttempt": "1",
-      "actionId": "cloud-2026-09-11-expression-045",
-      "idempotencyKey": "cloud-2026-09-11-expression-045",
-      "controlSha256": "bc025c0b2aaab8f39ee45ca440930289a03fe80e6bda0921a3083e928181121e",
-      "requestedPostId": "2026-09-11-expression-045-cloud",
-      "claimedAt": "2026-09-11T08:19:17.703Z"
-    }
-  ],
+  "lock": null,
+  "actions": [],
   "migration": {
     "importedAt": "2026-09-08T04:48:27.437Z",
     "files": 82,
@@ -30,7 +11,9 @@
     "runId": "34578531585",
     "completedAt": "2026-09-11T08:20:46.858Z",
     "status": "blocked_ambiguous_or_incomplete",
-    "storyStatus": "story_skipped_pair_not_verified"
+    "storyStatus": "story_skipped_pair_not_verified",
+    "resolution": "confirmed_no_agent_process_no_social_writes",
+    "resolvedAt": "2026-09-11T08:23:08.434Z"
   },
   "abortedBeforeLaunch": [
     {
@@ -97,6 +80,73 @@
       },
       "baselineCommit": "e20f89c267f8ac595bb99c259b4c1a83217254ec",
       "failedCheckpoint": "a42b2a89531909e6c7093de19d3b05ca35492c20",
+      "resolution": "confirmed_no_agent_process_no_social_writes"
+    },
+    {
+      "runId": "34578531585",
+      "runAttempt": "1",
+      "actionId": "cloud-2026-09-11-expression-045",
+      "idempotencyKey": "cloud-2026-09-11-expression-045",
+      "controlSha256": "bc025c0b2aaab8f39ee45ca440930289a03fe80e6bda0921a3083e928181121e",
+      "requestedPostId": "2026-09-11-expression-045-cloud",
+      "claimedAt": "2026-09-11T08:19:17.703Z",
+      "failedRun": "34578531585",
+      "failedRunConclusion": "failure",
+      "checkedAt": "2026-09-11T08:23:08.434Z",
+      "nativePreviewRun": "34578216162",
+      "nativeSpawnVerified": true,
+      "failedLogSha256": "06e6b3c5cdea84a47037adf0ac8ff6c08db1d0b8054aaff70523911b5d178be1",
+      "failureKind": "duplicate_cli_argument",
+      "agentFailedBeforeSpawn": true,
+      "instagramUnchanged": true,
+      "noNewThreads": true,
+      "noNewStories": true,
+      "originalLock": {
+        "runId": "34578531585",
+        "runAttempt": "1",
+        "actionId": "cloud-2026-09-11-expression-045",
+        "idempotencyKey": "cloud-2026-09-11-expression-045",
+        "controlSha256": "bc025c0b2aaab8f39ee45ca440930289a03fe80e6bda0921a3083e928181121e",
+        "requestedPostId": "2026-09-11-expression-045-cloud",
+        "claimedAt": "2026-09-11T08:19:17.703Z",
+        "status": "needs_official_readback"
+      },
+      "originalLastRun": {
+        "runId": "34578531585",
+        "completedAt": "2026-09-11T08:20:46.858Z",
+        "status": "blocked_ambiguous_or_incomplete",
+        "storyStatus": "story_skipped_pair_not_verified"
+      },
+      "archivedUnstartedSeed": {
+        "schemaVersion": 2,
+        "id": "2026-09-11-expression-045-cloud",
+        "title": "정말요?",
+        "series": "Korean Conversation",
+        "source": {
+          "expressionId": "045",
+          "expression": "정말요?",
+          "statusAtSelection": "ready"
+        },
+        "content": {
+          "html": "series/2026-09-11-expression-045-cloud/index.html",
+          "copySpec": "series/2026-09-11-expression-045-cloud/copy-review-spec.json",
+          "exportsDir": "exports/2026-09-11-expression-045-cloud"
+        },
+        "instagram": {
+          "captionLanguages": [
+            "ko",
+            "en"
+          ],
+          "caption": "",
+          "hashtags": []
+        },
+        "workflow": {
+          "status": "draft",
+          "autoPublish": false
+        }
+      },
+      "baselineCommit": "7c735d2214ff150ffba77991ba1329505d649ae4",
+      "failedCheckpoint": "60a2c809002c9190fc84f23146319418bb96a7f9",
       "resolution": "confirmed_no_agent_process_no_social_writes"
     }
   ]
