@@ -100,7 +100,6 @@ jobs:
           working-directory: C:\Users\earth\OneDrive\Desktop\codex\instagram-card-test\meaning-switch-series-v1
           safety-strategy: unsafe # Required by the official action on a fresh Windows VM.
           sandbox: danger-full-access
-          codex-args: '["--skip-git-repo-check"]'
       - name: Checkpoint outcomes or retain the unresolved lock
         if: always() && steps.prepare.outputs.run_agent == 'true'
         env:
