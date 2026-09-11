@@ -1,26 +1,7 @@
 {
   "version": 1,
-  "lock": {
-    "runId": "34577557652",
-    "runAttempt": "1",
-    "actionId": "cloud-2026-09-11-expression-045",
-    "idempotencyKey": "cloud-2026-09-11-expression-045",
-    "controlSha256": "47c1459d6be3e10a1ae228e7ce53abbfe259c10617e687d8ca6bfd13d61b8232",
-    "requestedPostId": "2026-09-11-expression-045-cloud",
-    "claimedAt": "2026-09-11T08:07:14.752Z",
-    "status": "needs_official_readback"
-  },
-  "actions": [
-    {
-      "runId": "34577557652",
-      "runAttempt": "1",
-      "actionId": "cloud-2026-09-11-expression-045",
-      "idempotencyKey": "cloud-2026-09-11-expression-045",
-      "controlSha256": "47c1459d6be3e10a1ae228e7ce53abbfe259c10617e687d8ca6bfd13d61b8232",
-      "requestedPostId": "2026-09-11-expression-045-cloud",
-      "claimedAt": "2026-09-11T08:07:14.752Z"
-    }
-  ],
+  "lock": null,
+  "actions": [],
   "migration": {
     "importedAt": "2026-09-08T04:48:27.437Z",
     "files": 82,
@@ -30,6 +11,76 @@
     "runId": "34577557652",
     "completedAt": "2026-09-11T08:08:50.237Z",
     "status": "blocked_ambiguous_or_incomplete",
-    "storyStatus": "story_skipped_pair_not_verified"
-  }
+    "storyStatus": "story_skipped_pair_not_verified",
+    "resolution": "confirmed_no_agent_process_no_social_writes",
+    "resolvedAt": "2026-09-11T08:18:11.967Z"
+  },
+  "abortedBeforeLaunch": [
+    {
+      "runId": "34577557652",
+      "runAttempt": "1",
+      "actionId": "cloud-2026-09-11-expression-045",
+      "idempotencyKey": "cloud-2026-09-11-expression-045",
+      "controlSha256": "47c1459d6be3e10a1ae228e7ce53abbfe259c10617e687d8ca6bfd13d61b8232",
+      "requestedPostId": "2026-09-11-expression-045-cloud",
+      "claimedAt": "2026-09-11T08:07:14.752Z",
+      "failedRun": "34577557652",
+      "failedRunConclusion": "failure",
+      "checkedAt": "2026-09-11T08:18:11.967Z",
+      "nativePreviewRun": "34578216162",
+      "nativeSpawnVerified": true,
+      "failedLogSha256": "94f4639fdddeef693e388b9d6c024e5a5fd3b1b089d90aa22a2b3042c53b39ff",
+      "agentFailedBeforeSpawn": true,
+      "instagramUnchanged": true,
+      "noNewThreads": true,
+      "noNewStories": true,
+      "originalLock": {
+        "runId": "34577557652",
+        "runAttempt": "1",
+        "actionId": "cloud-2026-09-11-expression-045",
+        "idempotencyKey": "cloud-2026-09-11-expression-045",
+        "controlSha256": "47c1459d6be3e10a1ae228e7ce53abbfe259c10617e687d8ca6bfd13d61b8232",
+        "requestedPostId": "2026-09-11-expression-045-cloud",
+        "claimedAt": "2026-09-11T08:07:14.752Z",
+        "status": "needs_official_readback"
+      },
+      "originalLastRun": {
+        "runId": "34577557652",
+        "completedAt": "2026-09-11T08:08:50.237Z",
+        "status": "blocked_ambiguous_or_incomplete",
+        "storyStatus": "story_skipped_pair_not_verified"
+      },
+      "archivedUnstartedSeed": {
+        "schemaVersion": 2,
+        "id": "2026-09-11-expression-045-cloud",
+        "title": "정말요?",
+        "series": "Korean Conversation",
+        "source": {
+          "expressionId": "045",
+          "expression": "정말요?",
+          "statusAtSelection": "ready"
+        },
+        "content": {
+          "html": "series/2026-09-11-expression-045-cloud/index.html",
+          "copySpec": "series/2026-09-11-expression-045-cloud/copy-review-spec.json",
+          "exportsDir": "exports/2026-09-11-expression-045-cloud"
+        },
+        "instagram": {
+          "captionLanguages": [
+            "ko",
+            "en"
+          ],
+          "caption": "",
+          "hashtags": []
+        },
+        "workflow": {
+          "status": "draft",
+          "autoPublish": false
+        }
+      },
+      "baselineCommit": "e20f89c267f8ac595bb99c259b4c1a83217254ec",
+      "failedCheckpoint": "a42b2a89531909e6c7093de19d3b05ca35492c20",
+      "resolution": "confirmed_no_agent_process_no_social_writes"
+    }
+  ]
 }
