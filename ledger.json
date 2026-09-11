@@ -166,5 +166,11 @@
       "failedCheckpoint": "60a2c809002c9190fc84f23146319418bb96a7f9",
       "resolution": "confirmed_no_agent_process_no_social_writes"
     }
-  ]
+  ],
+  "storyReconciliationClaim": {
+    "runId": "34580004117",
+    "sourceJob": "2026-09-11-expression-045-cloud",
+    "claimedAt": "2026-09-11T08:37:19.460Z",
+    "status": "claimed_before_possible_story_write"
+  }
 }
