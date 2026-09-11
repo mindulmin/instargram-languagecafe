@@ -104,6 +104,65 @@ async function prepare() {
   summarize({ ...result, status: 'claimed_for_one_learning_pair' });
   output('run_agent', 'true');
 }
+function reconciliationControl(state, lock) {
+  if (!lock || lock.status !== 'needs_official_readback' || !/^\d+$/.test(lock.runId || '')
+    || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,180}$/.test(lock.requestedPostId || '')) throw Error('No reviewable original claim');
+  const bytes = Buffer.from(state.files['operations/cloud-controller/current.json'] || '', 'base64');
+  if (digest(bytes) !== lock.controlSha256) throw Error('Original control bytes do not match the claim');
+  const control = JSON.parse(bytes);
+  for (const key of ['actionId', 'idempotencyKey', 'requestedPostId']) {
+    if (!lock[key] || control.handoff?.[key] !== lock[key]) throw Error('Original claim identity mismatch');
+  }
+  return { bytes, control, jobPath: `jobs/${lock.requestedPostId}.json` };
+}
+async function reconcile() {
+  // Manual readback-only pair resolution. Never creates/repeats Instagram or Threads.
+  // A reviewed, never-attempted Story remains a separately authorized optional action.
+  hostedOnly();
+  const api = new GitHubState(process.env.GH_TOKEN), remote = await api.read();
+  const state = decrypt(remote.encrypted, process.env.LANGUAGE_CAFE_STATE_KEY);
+  const original = reconciliationControl(state, remote.ledger.lock);
+  const failedRun = await api.api('actions/runs/' + remote.ledger.lock.runId);
+  if (failedRun.status !== 'completed') throw Error('Original publishing run is not complete');
+  if (fs.existsSync(RUNTIME)) throw Error('Canonical runner directory must start absent');
+  const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: ROOT }).toString().split('\0').filter(Boolean);
+  for (const relative of tracked) {
+    if (relative.startsWith('.github/')) continue;
+    const target = path.join(RUNTIME, relative);
+    fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(path.join(ROOT, relative), target);
+  }
+  restore(RUNTIME, state);
+  fs.mkdirSync(path.dirname(CONTROL), { recursive: true }); fs.writeFileSync(CONTROL, original.bytes);
+  write(path.join(RUNTIME, 'cloud-permit.json'), { ...remote.ledger.lock, remoteClaimSha: remote.sha, jobPath: original.jobPath });
+  for (const [channel, name] of [['instagram', 'INSTAGRAM_SESSION_JSON'], ['threads', 'THREADS_SESSION_JSON']]) {
+    write(`C:/Users/earth/.codex/${channel}/session.json`, JSON.parse(process.env[name]));
+  }
+  if (!verifiedPair(RUNTIME, original.control) || !await require('./live-verification.cjs').verifyLivePair(RUNTIME, original.control)) {
+    throw Error('Official exact-one pair not verified; original state and lock remain unchanged');
+  }
+  let checkpointBase = remote;
+  let story = { status: 'story_not_retried_without_proof_of_no_prior_attempt' };
+  const storyNeverEntered = remote.ledger.lastRun?.runId === remote.ledger.lock.runId
+    && remote.ledger.lastRun?.storyStatus === 'story_skipped_pair_not_verified';
+  if (storyNeverEntered && !remote.ledger.storyReconciliationClaim) {
+    // Remote intent survives a runner crash even if a later local Story checkpoint is lost.
+    checkpointBase = await api.save(remote, { ...remote.ledger,
+      storyReconciliationClaim: { runId: process.env.GITHUB_RUN_ID, sourceJob: remote.ledger.lock.requestedPostId,
+        claimedAt: new Date().toISOString(), status: 'claimed_before_possible_story_write' } }, remote.encrypted);
+    try { story = await require('./growth.cjs').runStory(RUNTIME, original.control); }
+    catch { story = { status: 'story_blocked_validation_or_network' }; }
+  }
+  write(path.join(RESULTS, 'story.json'), story);
+  const audit = { runId: process.env.GITHUB_RUN_ID, originalPublishRunId: remote.ledger.lock.runId, completedAt: new Date().toISOString(),
+    originalStateSha: remote.sha, status: 'published_learning_pair_exactly_once', verification: 'fresh_official_readback_including_full_caption_hashtags',
+    pairPublishCalls: 0, storyStatus: story.status };
+  write(path.join(RUNTIME, 'operations/cloud-controller/reconciliation', process.env.GITHUB_RUN_ID + '.json'), audit);
+  const ledger = { ...checkpointBase.ledger, lock: null, lastRun: audit,
+    reconciliations: [...(remote.ledger.reconciliations || []), audit] };
+  await api.save(checkpointBase, ledger, encrypt(collect(RUNTIME, true), process.env.LANGUAGE_CAFE_STATE_KEY));
+  write(path.join(RESULTS, 'checkpoint.json'), audit);
+  console.log(JSON.stringify(audit));
+}
 function verifiedPair(root, control) {
   const file = path.join(root, 'operations/revenue-experiment', control.testId, 'publisher-receipts', control.handoff.actionId + '.json');
   if (!fs.existsSync(file)) return false;
@@ -170,7 +229,7 @@ async function finalize() {
 }
 if (require.main === module) {
   const command = process.argv[2];
-  Promise.resolve().then(() => command === 'prepare' ? prepare() : command === 'finalize' ? finalize() : Promise.reject(new Error('Unknown runner command')))
+  Promise.resolve().then(() => command === 'prepare' ? prepare() : command === 'finalize' ? finalize() : command === 'reconcile' ? reconcile() : Promise.reject(new Error('Unknown runner command')))
     .catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { verifiedPair };
+module.exports = { verifiedPair, reconciliationControl };

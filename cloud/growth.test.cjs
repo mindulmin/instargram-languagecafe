@@ -42,10 +42,26 @@ test('unreviewed or modified story cannot be uploaded', () => {
 });
 test('fresh pair readback rejects duplicate expressions and mismatched Threads text', () => {
   const { matches } = require('./live-verification.cjs');
-  const job = { source: { expression: '정말요?' }, instagram: { caption: '정말요? Really?' }, published: { mediaId: 'ig', verification: { permalink: 'link' } } };
+  const job = { source: { expression: '정말요?' }, instagram: { caption: '정말요? Really?', hashtags: [] }, published: { mediaId: 'ig', verification: { permalink: 'link' } } };
   const thread = { copy: { primaryPost: '정말요? Recall link' }, published: { mediaId: 'th' } };
   const ig = [{ id: 'ig', caption: job.instagram.caption, media_type: 'CAROUSEL_ALBUM', permalink: 'link' }], th = [{ id: 'th', text: thread.copy.primaryPost }];
   assert.equal(matches(job, thread, ig, th), true);
   assert.equal(matches(job, thread, [...ig, { id: 'duplicate', media_type: 'CAROUSEL_ALBUM', caption: 'Contrast 정말요?' }], th), false);
   assert.equal(matches(job, thread, ig, [{ id: 'th', text: 'wrong' }]), false);
+  job.instagram.hashtags = ['LearnKorean', '#KoreanExpression'];
+  assert.equal(matches(job, thread, ig, th), false);
+  const full = [{ ...ig[0], caption: '정말요? Really?\n\n#LearnKorean #KoreanExpression' }];
+  assert.equal(matches(job, thread, full, th), true);
+  assert.equal(matches(job, thread, [{ ...full[0], caption: full[0].caption + ' #unexpected' }], th), false);
+});
+test('manual reconciliation requires the exact original claim and immutable control bytes', () => {
+  const { reconciliationControl } = require('./runner.cjs'), { digest } = require('./gates.cjs');
+  const control = { handoff: { actionId: 'action', idempotencyKey: 'key', requestedPostId: 'job' } };
+  const bytes = Buffer.from(JSON.stringify(control));
+  const state = { files: { 'operations/cloud-controller/current.json': bytes.toString('base64') } };
+  const lock = { ...control.handoff, runId: '123', status: 'needs_official_readback', controlSha256: digest(bytes) };
+  assert.equal(reconciliationControl(state, lock).jobPath, 'jobs/job.json');
+  assert.throws(() => reconciliationControl(state, { ...lock, actionId: 'different' }), /identity mismatch/);
+  assert.throws(() => reconciliationControl(state, { ...lock, controlSha256: '0'.repeat(64) }), /control bytes/);
+  assert.throws(() => reconciliationControl(state, { ...lock, requestedPostId: '../escape' }), /reviewable/);
 });

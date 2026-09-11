@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'preflight: infrastructure; controller-preview: select without publishing; publish: full workflow'
+        description: 'preflight: infrastructure; controller-preview: select only; publish: full workflow; reconcile: verify existing pair and unattempted Story'
         type: choice
-        options: [preflight, controller-preview, publish]
+        options: [preflight, controller-preview, publish, reconcile]
         default: preflight
 
 concurrency:
@@ -62,6 +62,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Restore state and run the cloud content controller
         id: prepare
+        if: inputs.mode != 'reconcile'
         env:
           GH_TOKEN: ${{ github.token }}
           LANGUAGE_CAFE_STATE_KEY: ${{ secrets.LANGUAGE_CAFE_STATE_KEY }}
@@ -72,6 +73,16 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           RUN_MODE: ${{ inputs.mode || 'publish' }}
         run: node cloud/runner.cjs prepare
+      - name: Reconcile existing pair without repeating either post
+        if: inputs.mode == 'reconcile'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LANGUAGE_CAFE_STATE_KEY: ${{ secrets.LANGUAGE_CAFE_STATE_KEY }}
+          INSTAGRAM_SESSION_JSON: ${{ secrets.INSTAGRAM_SESSION_JSON }}
+          THREADS_SESSION_JSON: ${{ secrets.THREADS_SESSION_JSON }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node cloud/runner.cjs reconcile
       - name: Install publisher runtime
         if: steps.prepare.outputs.run_agent == 'true'
         working-directory: C:\Users\earth\OneDrive\Desktop\codex\instagram-card-test\meaning-switch-series-v1

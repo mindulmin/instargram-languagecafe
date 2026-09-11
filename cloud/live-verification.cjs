@@ -2,12 +2,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { recentMedia } = require('./official-read.cjs');
 const { normalizeCaption, normalizeExpression } = require('../publish-safety.cjs');
+const { formatCaption } = require('../carousel-pipeline.cjs');
 function matches(job, thread, instagram, threads) {
   const id = job.published?.mediaId, tid = thread.published?.mediaId;
   const text = thread.copy?.primaryPost;
-  if (!id || !tid || !job.source?.expression || !text) return false;
+  if (!id || !tid || !job.source?.expression || !text || !Array.isArray(job.instagram?.hashtags)) return false;
   const sameId = instagram.filter(m => m.id === id && m.media_type === 'CAROUSEL_ALBUM' && m.permalink === job.published?.verification?.permalink);
-  const sameCaption = instagram.filter(m => m.media_type === 'CAROUSEL_ALBUM' && normalizeCaption(m.caption) === normalizeCaption(job.instagram?.caption));
+  const sameCaption = instagram.filter(m => m.media_type === 'CAROUSEL_ALBUM' && normalizeCaption(m.caption) === normalizeCaption(formatCaption(job)));
   const sameExpression = instagram.filter(m => m.media_type === 'CAROUSEL_ALBUM' && normalizeExpression(m.caption).includes(normalizeExpression(job.source.expression)));
   const sameThreadId = threads.filter(m => m.id === tid);
   const sameText = threads.filter(m => normalizeCaption(m.text) === normalizeCaption(text));

@@ -486,4 +486,4 @@ if (require.main === module) main().catch((error) => {
   });
 });
 
-module.exports = { GraphApiRequestError, graphRequest, serializePublishError };
+module.exports = { GraphApiRequestError, graphRequest, serializePublishError, formatCaption };
