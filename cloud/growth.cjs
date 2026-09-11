@@ -15,7 +15,10 @@ async function insights(value, history, request = fetch) {
     // Individual requests preserve supported metrics when another metric is unavailable.
     for (const metric of ['reach', 'saved', 'shares']) {
       try { metrics[metric] = numericMetric(await graph(s, `${media.id}/insights`, { metric }, request), metric); }
-      catch { metrics[metric] = { value: null, status: 'unavailable' }; }
+      catch (error) {
+        metrics[metric] = { value: null, status: 'unavailable',
+          reason: /^instagram_read_failed_http_\d+_code_\d+$/.test(error.message) ? error.message : 'official_read_unavailable' };
+      }
     }
     output.push({ mediaId: media.id, permalink: media.permalink, publishedAt: media.timestamp, metrics });
   }

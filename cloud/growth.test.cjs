@@ -1,6 +1,14 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { numericMetric, storyReviewErrors, publishStoryOnce } = require('./growth.cjs');
+const { numericMetric, storyReviewErrors, publishStoryOnce, insights } = require('./growth.cjs');
+test('insights permission failures retain a sanitized reason rather than a false zero', async () => {
+  const result = await insights({ accountId: '123', accessToken: 'never-log-me', graphVersion: 'v25.0' },
+    { media: [{ id: '456', media_type: 'CAROUSEL_ALBUM', timestamp: '2026-09-11T00:00:00Z' }] },
+    async () => ({ ok: false, status: 400, json: async () => ({ error: { code: 10, message: 'never-log-me' } }) }));
+  assert.equal(result.posts[0].metrics.reach.value, null);
+  assert.equal(result.posts[0].metrics.reach.reason, 'instagram_read_failed_http_400_code_10');
+  assert.equal(JSON.stringify(result).includes('never-log-me'), false);
+});
 test('missing metrics stay unavailable and actual numeric zero stays observed', () => {
   assert.deepEqual(numericMetric({}, 'reach'), { value: null, status: 'unavailable' });
   assert.deepEqual(numericMetric({ data: [{ name: 'reach', values: [{ value: 0 }] }] }, 'reach'), { value: 0, status: 'observed' });
