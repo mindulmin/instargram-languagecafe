@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "lock": null,
-  "actions": [],
+  "lock": {
+    "runId": "34578531585",
+    "runAttempt": "1",
+    "actionId": "cloud-2026-09-11-expression-045",
+    "idempotencyKey": "cloud-2026-09-11-expression-045",
+    "controlSha256": "bc025c0b2aaab8f39ee45ca440930289a03fe80e6bda0921a3083e928181121e",
+    "requestedPostId": "2026-09-11-expression-045-cloud",
+    "claimedAt": "2026-09-11T08:19:17.703Z"
+  },
+  "actions": [
+    {
+      "runId": "34578531585",
+      "runAttempt": "1",
+      "actionId": "cloud-2026-09-11-expression-045",
+      "idempotencyKey": "cloud-2026-09-11-expression-045",
+      "controlSha256": "bc025c0b2aaab8f39ee45ca440930289a03fe80e6bda0921a3083e928181121e",
+      "requestedPostId": "2026-09-11-expression-045-cloud",
+      "claimedAt": "2026-09-11T08:19:17.703Z"
+    }
+  ],
   "migration": {
     "importedAt": "2026-09-08T04:48:27.437Z",
     "files": 82,
