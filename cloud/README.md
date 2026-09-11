@@ -35,6 +35,8 @@ One concurrency group serializes scheduled and manual runs. A rerun with an alre
 
 To recover, first inspect the exact affected jobs, per-platform locks, official recent media and containers. Reconcile and preserve their evidence. Never delete a remote lock or rerun a publishing command speculatively. This migration does not enable automatic recovery or new Reels.
 
+The September 11 infrastructure attempt `34577557652` failed with `spawn codex ENOENT` before an agent process existed. `resolve-prelaunch.cjs` is an operator-only, exact-commit-bound resolution for this one incident, not a scheduled retry mechanism. It requires a successful hosted native-executable test, the failed job log, byte-identical original state, exactly the four expected preparation-only files, unchanged official Instagram history, and no new Threads or Stories. It archives the unstarted seed and original claim with proof hashes while preserving all 82 original files and Git history. Any mismatch leaves the lock untouched. Native executable verification now runs before any new claim.
+
 The local Codex schedule must be paused after the first hosted preflight is confirmed, so there is one active scheduler. Local jobs and the original parent repository remain intact for review.
 
 ## Quality and verification
