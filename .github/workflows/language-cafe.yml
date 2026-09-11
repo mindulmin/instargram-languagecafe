@@ -46,6 +46,20 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: node cloud/check-cloudflare.cjs
+      - name: Verify native Codex executable before claiming any publication
+        run: |
+          # Node child_process.spawn cannot launch the npm codex.cmd shim on Windows.
+          # Keep the official action, but give its child process an actual codex.exe.
+          $nativeRoot = Join-Path $env:RUNNER_TEMP 'language-cafe-codex'
+          npm install --prefix $nativeRoot --no-audit --no-fund @openai/codex@0.154.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $nativeExecutables = @(Get-ChildItem -LiteralPath $nativeRoot -Recurse -File -Filter codex.exe)
+          if ($nativeExecutables.Count -ne 1) { throw 'Expected exactly one native Codex executable' }
+          $nativeDirectory = $nativeExecutables[0].DirectoryName
+          $env:PATH = "$nativeDirectory;$env:PATH"
+          Add-Content -LiteralPath $env:GITHUB_PATH -Value $nativeDirectory
+          node -e "const r=require('node:child_process').spawnSync('codex',['--version'],{encoding:'utf8'}); if(r.error||r.status!==0) throw Error('Native Codex spawn failed'); console.log(r.stdout.trim());"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Restore state and run the cloud content controller
         id: prepare
         env:
@@ -80,6 +94,7 @@ jobs:
           CLOUDFLARE_PAGES_PROJECT: language-cafe-instagram-assets
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          codex-version: '0.154.0'
           prompt-file: cloud/publisher-prompt.md
           output-file: cloud/results/agent-summary.md
           working-directory: C:\Users\earth\OneDrive\Desktop\codex\instagram-card-test\meaning-switch-series-v1
