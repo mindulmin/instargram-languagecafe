@@ -32,3 +32,12 @@ test('unreviewed or modified story cannot be uploaded', () => {
   const errors = storyReviewErrors({}, {}, Buffer.from('unreviewed'), { width: 1080, height: 1350, format: 'png' });
   assert.ok(errors.includes('story_image_invalid')); assert.ok(errors.includes('story_review_incomplete'));
 });
+test('fresh pair readback rejects duplicate expressions and mismatched Threads text', () => {
+  const { matches } = require('./live-verification.cjs');
+  const job = { source: { expression: '정말요?' }, instagram: { caption: '정말요? Really?' }, published: { mediaId: 'ig', verification: { permalink: 'link' } } };
+  const thread = { copy: { primaryPost: '정말요? Recall link' }, published: { mediaId: 'th' } };
+  const ig = [{ id: 'ig', caption: job.instagram.caption, media_type: 'CAROUSEL_ALBUM', permalink: 'link' }], th = [{ id: 'th', text: thread.copy.primaryPost }];
+  assert.equal(matches(job, thread, ig, th), true);
+  assert.equal(matches(job, thread, [...ig, { id: 'duplicate', media_type: 'CAROUSEL_ALBUM', caption: 'Contrast 정말요?' }], th), false);
+  assert.equal(matches(job, thread, ig, [{ id: 'th', text: 'wrong' }]), false);
+});

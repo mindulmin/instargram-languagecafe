@@ -35,7 +35,7 @@ function decide({ template, policy, root, ledger, history, rows, now = new Date(
   c.asOfDate = date;
   c.handoff = { ...c.handoff, consumerAction: 'stop', actionId: null, idempotencyKey: null, issuedAt: null, validUntil: null, requestedPostId: null, targetExpression: null, mayCreateMedia: false, mayPublish: false };
   c.publishing = { ...c.publishing, status: 'blocked_content', postDue: false };
-  if (policy.version !== 1 || policy.enabled !== true || policy.maxPosts !== 3 || policy.minimumGapHours < 72 || policy.releaseHours < 1 || policy.releaseHours > 3) return stop('controller_policy_invalid_or_disabled');
+  if (policy.version !== 1 || policy.enabled !== true || policy.maxPosts !== 3 || !Number.isFinite(policy.minimumGapHours) || policy.minimumGapHours < 72 || !Number.isFinite(policy.releaseHours) || policy.releaseHours < 1 || policy.releaseHours > 3) return stop('controller_policy_invalid_or_disabled');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(policy.startsOn) || date < policy.startsOn) return stop('controller_not_started');
   if (!ledger || ledger.version !== 1 || !Array.isArray(ledger.actions) || ledger.lock) return stop('controller_state_locked_or_invalid');
   if (history?.source !== 'official_instagram_graph_api_recent_media' || history.complete !== true || !Array.isArray(history.media)
@@ -66,7 +66,7 @@ function decide({ template, policy, root, ledger, history, rows, now = new Date(
   // Include all previous attempts, not only successful jobs. No automatic lock recovery.
   const used = new Set(jobs.map(j => String(j.source?.expressionId || '')));
   const captions = [...history.media.map(m => m.caption), ...jobs.map(j => j.instagram?.caption)].map(normalizeExpression);
-  const eligible = rows.filter(r => r.status === 'ready' && r.primaryFormat === 'card_carousel' && /^[A-Za-z0-9_-]+$/.test(r.id) && r.koreanExpression && !used.has(String(r.id))
+  const eligible = rows.filter(r => r.status === 'ready' && r.primaryFormat === 'card_carousel' && /^[A-Za-z0-9_-]+$/.test(r.id) && /^[\p{Script=Hangul}\s?!.,]{2,60}$/u.test(r.koreanExpression) && !used.has(String(r.id))
     && !captions.some(text => text.includes(normalizeExpression(r.koreanExpression))));
   if (!eligible.length) return stop('controller_no_unique_ready_expression');
   let inbox = {};

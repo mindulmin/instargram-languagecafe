@@ -148,7 +148,11 @@ async function finalize() {
   if (remote.sha !== claim.remoteClaimSha || remote.ledger.lock?.runId !== process.env.GITHUB_RUN_ID) throw new Error('Claim ownership changed');
   const controlBytes = fs.readFileSync(CONTROL);
   const unchanged = digest(controlBytes) === claim.controlSha256;
-  const success = unchanged && process.env.AGENT_OUTCOME === 'success' && verifiedPair(RUNTIME, JSON.parse(controlBytes));
+  let success = unchanged && process.env.AGENT_OUTCOME === 'success' && verifiedPair(RUNTIME, JSON.parse(controlBytes));
+  if (success) {
+    try { success = await require('./live-verification.cjs').verifyLivePair(RUNTIME, JSON.parse(controlBytes)); }
+    catch { success = false; }
+  }
   let story = { status: 'story_skipped_pair_not_verified' };
   if (success) {
     try { story = await require('./growth.cjs').runStory(RUNTIME, JSON.parse(controlBytes)); }
