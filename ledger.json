@@ -7,7 +7,8 @@
     "idempotencyKey": "cloud-2026-09-11-expression-045",
     "controlSha256": "47c1459d6be3e10a1ae228e7ce53abbfe259c10617e687d8ca6bfd13d61b8232",
     "requestedPostId": "2026-09-11-expression-045-cloud",
-    "claimedAt": "2026-09-11T08:07:14.752Z"
+    "claimedAt": "2026-09-11T08:07:14.752Z",
+    "status": "needs_official_readback"
   },
   "actions": [
     {
@@ -24,5 +25,11 @@
     "importedAt": "2026-09-08T04:48:27.437Z",
     "files": 82,
     "encryptedSha256": "f8bab5db808abd52862cc30bfa2011a3fd60aa513ac7a1a90003992c4f371e19"
+  },
+  "lastRun": {
+    "runId": "34577557652",
+    "completedAt": "2026-09-11T08:08:50.237Z",
+    "status": "blocked_ambiguous_or_incomplete",
+    "storyStatus": "story_skipped_pair_not_verified"
   }
 }
