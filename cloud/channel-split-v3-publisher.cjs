@@ -199,10 +199,11 @@ async function verifyAssets(job, fetchImpl) {
 }
 function sanitizeHistory(channel, media, accountId, checkedAt) {
   if (!Array.isArray(media)) fail("official_history_incomplete");
+  const copyKey = channel === "instagram" ? "caption" : "text";
   return { source: channel === "instagram" ? "official_instagram_graph_api_recent_media" : "official_threads_graph_api_recent_media",
     complete: true, accountId, checkedAt,
     media: media.map(item => ({ id: String(item.id || ""),
-      [channel === "instagram" ? "caption" : "text"]: item[channel === "instagram" ? "caption" : "text"],
+      [copyKey]: item[copyKey] == null ? "" : item[copyKey],
       mediaType: item.media_type, permalink: item.permalink, timestamp: item.timestamp })) };
 }
 function selectorLedger(ledger) {
@@ -512,7 +513,7 @@ function parseArgs(args) {
 async function runCli(args = process.argv.slice(2)) { return runTrusted(parseArgs(args)); }
 if (require.main === module) {
   runCli().then(value => console.log(JSON.stringify(value)))
-    .catch(error => { console.error(/^v3_publish_[a-z0-9_]+$/u.test(error?.message || "")
+    .catch(error => { console.error(/^(?:v3_publish|v3_remote|v3_state|promo)_[a-z0-9_]+$/u.test(error?.message || "")
       ? error.message : "v3_publish_blocked_or_ambiguous_manual_readback_required"); process.exitCode = 1; });
 }
 

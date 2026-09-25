@@ -252,6 +252,16 @@ test("cloud runner identity requires the active official workflow and exact main
   /cloud_runner_readback_mismatch/);
 });
 
+test("optional official caption or Threads text is an empty string, never unavailable history", () => {
+  for (const channel of ["instagram", "threads"]) {
+    const history = runner.__testOnly.sanitizeHistory(channel,
+      [{ id: "123", media_type: channel === "instagram" ? "IMAGE" : "VIDEO",
+        permalink: "https://example.test/post", timestamp: T }], "123456789", T);
+    assert.equal(history.media[0][channel === "instagram" ? "caption" : "text"], "");
+    assert.equal(history.complete, true);
+  }
+});
+
 test("Instagram intent commits before each social write and exact official readback closes one lock", async () => {
   const f = await fixture("instagram"), remote = new FakeRemote();
   const result = await runner.__testOnly.run({ channel: f.channel, jobId: f.id, publish: true },
