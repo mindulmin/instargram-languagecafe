@@ -212,10 +212,10 @@
       "threads": {
         "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
         "claimHash": "466ece62c21bbbada2b22cf0b39cea1f32b873685b40f24ff78923d8532b64cb",
-        "stage": "parent_create_attempted",
+        "stage": "container_created",
         "createAttempts": 4,
         "publishAttempts": 0,
-        "containerId": null,
+        "containerId": "17903994054569815",
         "childContainerIds": [
           "17903993157569815",
           "17903993673569815",
@@ -656,6 +656,22 @@
         ],
         "stateHash": "3c6ea602eafc68c19a82f8369033a1d63ce393c1385ff3b2e93d2ec650f53f29",
         "hash": "23e26aa0b49369352bb05ef35dc8c84d71f2e395145fec2302fbd5d3558578d8"
+      },
+      {
+        "sequence": 23,
+        "previousHash": "23e26aa0b49369352bb05ef35dc8c84d71f2e395145fec2302fbd5d3558578d8",
+        "at": "2026-09-25T14:15:31.738Z",
+        "kind": "threads_carousel_container_recorded",
+        "channel": "threads",
+        "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
+        "containerId": "17903994054569815",
+        "orderedChildContainerIds": [
+          "17903993157569815",
+          "17903993673569815",
+          "17903993976569815"
+        ],
+        "stateHash": "e054b3402a25488eb08c88f522f6d707b289628fe1d31e60654a382a48ae0b59",
+        "hash": "a8cdd1ffa69448941856f892b2ba2538d1adb0b155163baf0b74dd21f671095c"
       }
     ]
   }
