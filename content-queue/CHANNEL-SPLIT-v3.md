@@ -144,11 +144,13 @@ permission to retry. Never run two independent publishing schedulers.
   approved v3 jobs now have verified receipts; no additional approved content
   is currently queued. Do not describe this as unlimited autonomous content
   production.
-- A local fallback launcher and fail-closed takeover gate are implemented,
-  but no Windows fallback schedule has been installed or tested yet. It
-  requires a completed failed/missing cloud run, 90 minutes of grace,
-  reachable shared state, no unresolved v3 locks, and the exact current main
-  commit. Cloud execution remains primary.
+- A local fallback launcher and one Windows task were installed for 10:35
+  Asia/Seoul. A manual run safely declined publication after a successful
+  cloud run, with no attempt marker or remote-state change. A failed-cloud
+  takeover has not yet been observed. The fallback requires the PC on with
+  the user logged in, a completed failed/missing cloud run, 90 minutes of
+  grace, reachable shared state, no unresolved v3 locks, and a clean checkout
+  at the exact current main commit. Cloud execution remains primary.
 - Missing insight metrics are unavailable, never zero. Site visits and
   engagement are not revenue; a stale English-conversation CTA is a release
   blocker for new Korean-learning promotions.

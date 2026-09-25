@@ -40,11 +40,23 @@ starting the existing publisher. A second launch that day is blocked, even if
 the first process stopped early. Never delete that marker to force a retry;
 review the Action, remote state, and official account media first.
 
-If a future Windows Scheduled Task is approved, configure **one daily run at
-10:35 KST** with the repository as its working directory and the same Windows
-user. Do not create a second independent publisher or run this concurrently
-with another local scheduler. This launcher currently has no installed task;
-therefore cloud publishing is the only executor while the PC is off.
+On 2026-09-25, one Windows Scheduled Task named
+`LanguageCafe-v3-local-fallback` was installed for **10:35 KST daily**, using
+the same logged-in Windows user's interactive token and this repository as
+its working directory. Its action invokes this launcher with `--publish`;
+the task definition contains no GitHub or social token. The installation was
+read back from Task Scheduler. A manual test run on 2026-09-25 at 23:20 KST
+returned `LastTaskResult=0` while the official cloud run had succeeded; no
+attempt marker, new remote action, or new social receipt appeared. This proves
+the installed task can safely decline a takeover in that tested state. It
+does **not** prove a future failed-cloud takeover will publish successfully.
+
+This task requires the PC **on and the user logged in** because an interactive
+token is used; Windows will not run it while that user has no session. The
+current checkout must also remain clean and at remote `main`; the launcher
+fails closed instead of updating a dirty or stale checkout. Do not create a
+second local scheduler or run this one concurrently with another publisher.
+While the PC is off, only GitHub Actions can run.
 
 The launcher prints only safe status, job ID, media ID, and permalink fields.
 On a failed or uncertain child process it prints a generic readback-required
