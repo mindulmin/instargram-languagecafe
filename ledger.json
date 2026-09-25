@@ -208,14 +208,7 @@
     "schemaVersion": 1,
     "strategyVersion": "channel-split-v3",
     "locks": {
-      "instagram": {
-        "actionId": "v3:instagram:ig-cafe-pilot-20260925-01:36142919425",
-        "claimHash": "55d629d748b8dbb36a801753538db2c5d8102e847aa4f74e3703bf9c5e693e6d",
-        "stage": "publish_attempted",
-        "createAttempts": 1,
-        "publishAttempts": 1,
-        "containerId": "17907838707549864"
-      },
+      "instagram": null,
       "threads": {
         "actionId": "v3:threads:threads-takeaway-20260925-01:36141543126",
         "claimHash": "4036a747a1537c74f0069ee01124788918d8e14f0bbdc476906892126c90e140",
@@ -313,7 +306,30 @@
         "claimHash": "55d629d748b8dbb36a801753538db2c5d8102e847aa4f74e3703bf9c5e693e6d"
       }
     ],
-    "receipts": [],
+    "receipts": [
+      {
+        "status": "published_verified",
+        "strategyVersion": "channel-split-v3",
+        "channel": "instagram",
+        "actionId": "v3:instagram:ig-cafe-pilot-20260925-01:36142919425",
+        "jobId": "ig-cafe-pilot-20260925-01",
+        "claimHash": "55d629d748b8dbb36a801753538db2c5d8102e847aa4f74e3703bf9c5e693e6d",
+        "grantSha256": "a4a8e6105bb0dd160e6790046a8ace78437f6ed700b808107088dd1160812ea1",
+        "reviewer": "independent_editorial_controller_v1",
+        "remoteClaimCommitSha": "15fbc82f5de6bd46eb05733594f912d59bb34fe2",
+        "mediaId": "17910040623524634",
+        "permalink": "https://www.instagram.com/p/DdtmV9RjJfF/",
+        "publishedAt": "2026-09-25T13:46:25+0000",
+        "mediaType": "IMAGE",
+        "sourceAssetSha256": [
+          "93099ddcf0b8c2fc12147497fe8559b6bcac188aeee552f4c630bc0a47cae844"
+        ],
+        "checkedAt": "2026-09-25T13:46:27.892Z",
+        "officialSource": "official_instagram_graph_api_recent_media",
+        "officialReadbackSha256": "c3f18eead394ab6161753fcbdeeb6b201e21b32ee33363c0b6b1d43a77df1390",
+        "verifiedAt": "2026-09-25T13:46:27.892Z"
+      }
+    ],
     "audit": [
       {
         "sequence": 1,
@@ -452,6 +468,18 @@
         "containerId": "17907838707549864",
         "stateHash": "6b1762a643c100a1d1eca9c94833827d252b82640e74a3d831b615fe69e7a871",
         "hash": "4d37e58bbc86572ae435f80750238c33a93ff4a1dde7ba5ee3f23ee2fb7d6892"
+      },
+      {
+        "sequence": 13,
+        "previousHash": "4d37e58bbc86572ae435f80750238c33a93ff4a1dde7ba5ee3f23ee2fb7d6892",
+        "at": "2026-09-25T13:46:27.892Z",
+        "kind": "published_verified",
+        "channel": "instagram",
+        "actionId": "v3:instagram:ig-cafe-pilot-20260925-01:36142919425",
+        "mediaId": "17910040623524634",
+        "readbackSha256": "c3f18eead394ab6161753fcbdeeb6b201e21b32ee33363c0b6b1d43a77df1390",
+        "stateHash": "57c794b54c90abc658d095eef52d39f90212352adf71b8bf53699c0a095ed129",
+        "hash": "268e893b20dd6d90c4d31dc19039c43a44d6d491e85a8e3aec278528027fe857"
       }
     ]
   }
