@@ -209,7 +209,15 @@
     "strategyVersion": "channel-split-v3",
     "locks": {
       "instagram": null,
-      "threads": null
+      "threads": {
+        "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
+        "claimHash": "466ece62c21bbbada2b22cf0b39cea1f32b873685b40f24ff78923d8532b64cb",
+        "stage": "claimed",
+        "createAttempts": 0,
+        "publishAttempts": 0,
+        "containerId": null,
+        "childContainerIds": []
+      }
     },
     "actions": [
       {
@@ -291,6 +299,44 @@
         "validUntil": "2026-09-25T14:10:32.652Z",
         "originStateSha": "b035991005770b87ccc16d84d74b44c2fd25d057",
         "claimHash": "55d629d748b8dbb36a801753538db2c5d8102e847aa4f74e3703bf9c5e693e6d"
+      },
+      {
+        "schemaVersion": 1,
+        "strategyVersion": "channel-split-v3",
+        "channel": "threads",
+        "action": "publish_one_threads_carousel",
+        "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
+        "jobId": "threads-takeaway-20260925-02",
+        "jobPath": "content-queue/threads/jobs/threads-takeaway-20260925-02.json",
+        "jobSha256": "8ff5afb3fa3830ec68ba71e37e11a08807266e399cdee54d189bacf6f6c26dcb",
+        "contentSha256": "d2cf45852d1670d29a28e32a13c722cc56c01b694f8753e3b3ccd63fc11a4347",
+        "grantSha256": "508e1ae7607b8288473308fe7084ed100597d175c51aef958c852b524984dbea",
+        "reviewer": "independent_editorial_controller_v1",
+        "copySha256": "3bfcf2f91939570fb961830d827bc1c1b9bfd21b65694e4cd0baefea036c714d",
+        "assets": [
+          {
+            "url": "https://15f544d1.language-cafe-instagram-assets.pages.dev/card-01.jpg",
+            "sha256": "410ce3f294b63cb7d06ef6ffa697ff551157d7bc6f4ef755b9250a0d69596669",
+            "altText": "At a Korean café, a mint mascot points to a takeaway bag. 포장해 주세요. means To go, please."
+          },
+          {
+            "url": "https://15f544d1.language-cafe-instagram-assets.pages.dev/card-02.jpg",
+            "sha256": "95ac188368e63ad9354c43d52a3f68eef2f06dced904c70822538982380eabb2",
+            "altText": "In a café dialogue, staff asks 매장에서 드시나요? and the customer answers 포장해 주세요."
+          },
+          {
+            "url": "https://15f544d1.language-cafe-instagram-assets.pages.dev/card-03.jpg",
+            "sha256": "9c5d6ccf31df527f2b01581dc095a62ce8f97d9393cbb8dc46454b75f0f42b5c",
+            "altText": "A three-minute recall exercise asks you to say the takeaway line again, then points to a separate free Korean café mission linked in the caption."
+          }
+        ],
+        "accountId": "26852882424410102",
+        "runId": "36145951320",
+        "runAttempt": "1",
+        "issuedAt": "2026-09-25T14:13:34.654Z",
+        "validUntil": "2026-09-25T14:38:34.654Z",
+        "originStateSha": "0d3eecd841f894d3545298b0481b91f3d4baba59",
+        "claimHash": "466ece62c21bbbada2b22cf0b39cea1f32b873685b40f24ff78923d8532b64cb"
       }
     ],
     "receipts": [
@@ -508,6 +554,17 @@
         "retiredMainSha": "6f098f977f1f705622efb6b0de2e8489778169ed",
         "stateHash": "c92ce0eb50f40c50c8c627e24d2a76ace67107d9518cd6c1f36783b291777fa5",
         "hash": "70bc82339d168c719fc09f5041a3c74e2675083e193f9e3dee514861306ed5a8"
+      },
+      {
+        "sequence": 15,
+        "previousHash": "70bc82339d168c719fc09f5041a3c74e2675083e193f9e3dee514861306ed5a8",
+        "at": "2026-09-25T14:13:34.654Z",
+        "kind": "claim",
+        "channel": "threads",
+        "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
+        "claimHash": "466ece62c21bbbada2b22cf0b39cea1f32b873685b40f24ff78923d8532b64cb",
+        "stateHash": "31a35076ba7299c3422b5ca82869756afe2c092aa1c8331bd26c7613a44f62a5",
+        "hash": "f81153b72941654e89820e520dccb2760588a8caacfe6334a7ad175782024ae6"
       }
     ]
   }
