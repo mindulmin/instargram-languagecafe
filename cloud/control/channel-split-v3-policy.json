@@ -1,16 +1,18 @@
 {
   "schemaVersion": 1,
   "strategyVersion": "channel-split-v3",
-  "enabled": false,
+  "enabled": true,
   "channels": {
     "instagram": {
+      "enabled": true,
       "maxPosts": 3,
       "minimumGapHours": 72
     },
     "threads": {
+      "enabled": false,
       "maxPosts": 3,
       "minimumGapHours": 72
     }
   },
-  "activation": "Paused after controlled run 36141543126: GitHub Instagram session failed local shape validation and Threads retained a child-create intent at index 3. Reconcile official state and credentials before enabling again; never retry the uncertain Threads request."
+  "activation": "Instagram reviewed promotion enabled after refreshing the GitHub session. Threads remains paused because run 36141543126 retained an uncertain child-create intent at index 3; never retry that request before a separate official reconciliation."
 }
