@@ -116,9 +116,9 @@ permission to retry. Never run two independent publishing schedulers.
 - `cloud/control/policy.json` disables new v2 learning-pair releases, and its
   old GitHub Actions schedule is removed. Historical v2 jobs, receipts and
   unresolved per-job evidence are preserved; never retry a v2 social call.
-- `cloud/control/channel-split-v3-policy.json` enables Instagram and pauses
-  Threads independently. The v3 scheduled Action runs at 09:00 Asia/Seoul;
-  manual `preview` has no platform or remote-state credentials.
+- `cloud/control/channel-split-v3-policy.json` enables Instagram and Threads
+  independently. The v3 scheduled Action runs at 09:00 Asia/Seoul; manual
+  `preview` has no platform or remote-state credentials.
 - The first Instagram promotion was published by cloud run `36142919425` as
   official IMAGE `17910040623524634` at
   `https://www.instagram.com/p/DdtmV9RjJfF/`. Its remote v3 receipt is
@@ -126,21 +126,29 @@ permission to retry. Never run two independent publishing schedulers.
   account media list contained exactly one matching ID and caption. This is
   post verification, not reach, mission completion, or revenue evidence.
 - Threads run `36141543126` stopped at a fourth child IMAGE create intent,
-  before any carousel parent or publish intent. Its remote lock remains
-  unresolved, so Threads is paused. Never repeat that child create call or
-  relabel the job as published. Recovery requires a separate exact-action,
-  official-readback-backed state transition; a fresh job ID and separate
-  review are required for any later carousel.
+  before any carousel parent or publish intent. Its original job was retired,
+  and an exact-action official-readback-backed transition closed only that
+  remote lock as `abandoned_before_publish_intent`. The unknown fourth child
+  may exist; never repeat that API call or relabel the old job as published.
+  A separately reviewed three-card job then published in cloud run
+  `36145951320` as official `CAROUSEL_ALBUM` `18226021297332298` at
+  `https://www.threads.com/@mindulmin/post/Ddtpt44EZNr`. Fresh official API
+  readback found exactly one matching caption and all three IMAGE cards in
+  the reviewed order with matching alt text. This is not evidence of link
+  clicks, learning, or revenue.
 - The runner's source-controlled grant, current-main check, durable remote
   CAS and independent readback gate each social API intent. These gates do
   not cryptographically prove that future grants came from a separate human
   or model. Until a trusted independent reviewer creates more grants, the
-  daily schedule can only consume the existing finite queue. Do not describe
-  it as unlimited autonomous content production.
-- A local fallback is implemented as a fail-closed takeover gate, not yet an
-  active Windows schedule. It requires a completed failed/missing cloud run,
-  90 minutes of grace, reachable shared state, no unresolved v3 locks, and
-  the exact current main commit. Cloud execution remains primary.
+  daily schedule can only consume the existing finite queue. Both first
+  approved v3 jobs now have verified receipts; no additional approved content
+  is currently queued. Do not describe this as unlimited autonomous content
+  production.
+- A local fallback launcher and fail-closed takeover gate are implemented,
+  but no Windows fallback schedule has been installed or tested yet. It
+  requires a completed failed/missing cloud run, 90 minutes of grace,
+  reachable shared state, no unresolved v3 locks, and the exact current main
+  commit. Cloud execution remains primary.
 - Missing insight metrics are unavailable, never zero. Site visits and
   engagement are not revenue; a stale English-conversation CTA is a release
   blocker for new Korean-learning promotions.

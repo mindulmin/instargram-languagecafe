@@ -1,4 +1,4 @@
-# Campaign 2026-09-25-01 — reviewed and hosted, not published
+# Campaign 2026-09-25-01 — reviewed, hosted and published once
 
 ## Audience and one action
 
@@ -31,7 +31,7 @@ reviewed bytes. The Instagram asset is
 `https://d0c26c95.language-cafe-instagram-assets.pages.dev/instagram/ig-cafe-pilot-20260925-01.jpg`.
 The reviewed job is `content-queue/instagram-promo/jobs/ig-cafe-pilot-20260925-01.json`;
 its separate grant is `cloud/control/channel-split-v3-grants/ig-cafe-pilot-20260925-01.json`.
-Neither file is a remote publish permit or a verified social post.
+Neither file by itself is a remote publish permit or a verified social post. Cloud run `36142919425` subsequently published this exact promotion once as Instagram IMAGE `17910040623524634`; official media readback and remote receipt both verified the post at `https://www.instagram.com/p/DdtmV9RjJfF/`.
 
 Run `node content-queue/instagram-promo/campaign-2026-09-25-01/render.cjs` from the repository root to recreate the JPEG. The current JPEG SHA-256 is `93099ddcf0b8c2fc12147497fe8559b6bcac188aeee552f4c630bc0a47cae844`; source SVG SHA-256 is `bfb24124d74e681fb6169aedf1ef1efa65bb89bc6adfb42748a6c2eee119522b`.
 
@@ -44,8 +44,9 @@ Run `node content-queue/instagram-promo/campaign-2026-09-25-01/render.cjs` from 
 | Practicality | Rendered JPEG was visually inspected at its full 1080 × 1350 size: all text remains within the frame; Hangul and CTA are readable; no obscured words, external logos, mascot drift or screenshot implication. **Draft pass; mobile device review still required before approval.** |
 | Revenue contribution | The CTA goes to the free product entry point, so it can test relevant traffic and first mission starts. There is no measured traffic, conversion or revenue yet. **Outcome unavailable.** |
 
-The image was hosted and independently reviewed with the final caption, but
-no Instagram media was created or published. The job and separate grant are
-bound to exact bytes; the trusted runner must still pass live offer, identity,
-duplicate, and exact-once controls. Rerunning the hosting script creates another unique
-deployment; any replacement URL must be rebound and checked before review.
+The image was hosted and independently reviewed with the final caption before
+its one controlled cloud publication. The job and separate grant were bound
+to exact bytes; the trusted runner passed live offer, identity, duplicate,
+and exact-once controls. Rerunning the hosting script creates another unique
+deployment; a replacement URL would require a new job and review rather than
+republication of this already used job.
