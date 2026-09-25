@@ -202,9 +202,12 @@ function sanitizeHistory(channel, media, accountId, checkedAt) {
   const copyKey = channel === "instagram" ? "caption" : "text";
   return { source: channel === "instagram" ? "official_instagram_graph_api_recent_media" : "official_threads_graph_api_recent_media",
     complete: true, accountId, checkedAt,
-    media: media.map(item => ({ id: String(item.id || ""),
-      [copyKey]: item[copyKey] == null ? "" : item[copyKey],
-      mediaType: item.media_type, permalink: item.permalink, timestamp: item.timestamp })) };
+    media: media.map(item => {
+      const optionalCopy = channel === "instagram"
+        || ["VIDEO", "IMAGE", "CAROUSEL", "CAROUSEL_ALBUM"].includes(item.media_type);
+      return { id: String(item.id || ""), [copyKey]: item[copyKey] == null && optionalCopy ? "" : item[copyKey],
+        mediaType: item.media_type, permalink: item.permalink, timestamp: item.timestamp };
+    }) };
 }
 function selectorLedger(ledger) {
   const v3 = state.checkedLedger(ledger);

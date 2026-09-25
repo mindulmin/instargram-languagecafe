@@ -260,6 +260,10 @@ test("optional official caption or Threads text is an empty string, never unavai
     assert.equal(history.media[0][channel === "instagram" ? "caption" : "text"], "");
     assert.equal(history.complete, true);
   }
+  const missingTextPost = runner.__testOnly.sanitizeHistory("threads",
+    [{ id: "124", media_type: "TEXT_POST", timestamp: T }], "123456789", T);
+  assert.equal(missingTextPost.media[0].text, undefined,
+    "a malformed text-only post must not be silently normalized");
 });
 
 test("Instagram intent commits before each social write and exact official readback closes one lock", async () => {
