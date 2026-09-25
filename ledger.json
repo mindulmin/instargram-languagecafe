@@ -212,12 +212,13 @@
       "threads": {
         "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
         "claimHash": "466ece62c21bbbada2b22cf0b39cea1f32b873685b40f24ff78923d8532b64cb",
-        "stage": "child_create_attempted",
+        "stage": "child_container_created",
         "createAttempts": 1,
         "publishAttempts": 0,
         "containerId": null,
-        "childContainerIds": [],
-        "pendingChildIndex": 0
+        "childContainerIds": [
+          "17903993157569815"
+        ]
       }
     },
     "actions": [
@@ -578,6 +579,18 @@
         "assetSha256": "410ce3f294b63cb7d06ef6ffa697ff551157d7bc6f4ef755b9250a0d69596669",
         "stateHash": "ad136460adf19136625cb61bc8c337737c2d8e8be55842d0b7f96030133fd1bb",
         "hash": "c1c4b4b3f850e83b39aeea820cce8958d4ff4eecf297ba44037400fbf671ad47"
+      },
+      {
+        "sequence": 17,
+        "previousHash": "c1c4b4b3f850e83b39aeea820cce8958d4ff4eecf297ba44037400fbf671ad47",
+        "at": "2026-09-25T14:14:02.547Z",
+        "kind": "threads_child_container_recorded",
+        "channel": "threads",
+        "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
+        "childIndex": 0,
+        "containerId": "17903993157569815",
+        "stateHash": "442cde5936de6ebb510aea25f15a5fe93665508ff9f817c29369871706ba6349",
+        "hash": "19b30be6549b16aae8ed759e2e4f3fd5780a29a53d7609472b3de4b82f5501ff"
       }
     ]
   }
