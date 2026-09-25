@@ -212,8 +212,8 @@
       "threads": {
         "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
         "claimHash": "466ece62c21bbbada2b22cf0b39cea1f32b873685b40f24ff78923d8532b64cb",
-        "stage": "child_container_created",
-        "createAttempts": 3,
+        "stage": "parent_create_attempted",
+        "createAttempts": 4,
         "publishAttempts": 0,
         "containerId": null,
         "childContainerIds": [
@@ -641,6 +641,21 @@
         "containerId": "17903993976569815",
         "stateHash": "540448d775af2be4d0c0ed32c9ed459c32a6928e7402e9b6634e09821bcb899a",
         "hash": "a1bb1b405f8b6dbf1ee7b1e1ac079254f7d753e08e6964109cff02a978ed5929"
+      },
+      {
+        "sequence": 22,
+        "previousHash": "a1bb1b405f8b6dbf1ee7b1e1ac079254f7d753e08e6964109cff02a978ed5929",
+        "at": "2026-09-25T14:15:15.339Z",
+        "kind": "threads_carousel_create_intent",
+        "channel": "threads",
+        "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
+        "orderedChildContainerIds": [
+          "17903993157569815",
+          "17903993673569815",
+          "17903993976569815"
+        ],
+        "stateHash": "3c6ea602eafc68c19a82f8369033a1d63ce393c1385ff3b2e93d2ec650f53f29",
+        "hash": "23e26aa0b49369352bb05ef35dc8c84d71f2e395145fec2302fbd5d3558578d8"
       }
     ]
   }
