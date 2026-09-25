@@ -49,8 +49,16 @@ function validImage(image, channel) {
 function validSiteUrl(value) {
   try {
     const url = new URL(value);
-    return url.protocol === 'https:' && url.hostname === 'languagestudio.uk' && !url.username
-      && !url.password && !url.port && !url.hash;
+    if (url.protocol !== 'https:' || url.hostname !== 'languagestudio.uk' || url.pathname !== '/missions/korean-cafe/'
+      || url.username || url.password || url.port || url.hash || url.href !== value) return false;
+    const entries = [...url.searchParams.entries()];
+    if (!entries.length) return true;
+    const expected = { utm_source: 'threads', utm_medium: 'organic', utm_campaign: 'language_cafe' };
+    const keys = entries.map(([key]) => key);
+    return keys.length >= 3 && keys.length <= 4 && new Set(keys).size === keys.length
+      && Object.entries(expected).every(([key, item]) => url.searchParams.get(key) === item)
+      && keys.every(key => Object.hasOwn(expected, key) || key === 'utm_content')
+      && (!url.searchParams.has('utm_content') || /^[a-z0-9][a-z0-9_-]{0,79}$/u.test(url.searchParams.get('utm_content')));
   } catch {
     return false;
   }

@@ -6,23 +6,24 @@
 
 const crypto = require("node:crypto");
 const fs = require("node:fs/promises");
+const os = require("node:os");
 const path = require("node:path");
 const sharp = require("sharp");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 const JOBS_DIR = path.join(__dirname, "jobs");
 const LOCK_DIR = path.join(__dirname, ".publish-locks");
-const DEFAULT_SESSION_PATH = "C:\\Users\\earth\\.codex\\instagram\\session.json";
 const STRATEGY_VERSION = "channel-split-v3";
 const APP_ID = "2109337976465317";
 const ACCOUNT_USERNAME = "mindulmin";
 const SITE_HOST = "languagestudio.uk";
-const HOSTED_IMAGE_HOST = /^(?:[a-z0-9-]+\.)language-cafe-instagram-assets\.pages\.dev$/u;
+const HOME_URL = "https://languagestudio.uk/";
+const MISSION_URL = "https://languagestudio.uk/missions/korean-cafe/";
+const HOSTED_IMAGE_HOST = /^[a-f0-9]{8,64}\.language-cafe-instagram-assets\.pages\.dev$/u;
 const MAX_IMAGE_BYTES = 8_000_000;
 const MEDIA_FIELDS = "id,caption,media_type,permalink,timestamp";
-const CLAIM_CONVERSATION = "free_five_minute_ai_english_conversation_after_login";
-const CLAIM_SAVE_REVIEW = "save_and_review_sentence";
-const REVIEW_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const CLAIM_KOREAN_CAFE_PILOT = "free_korean_cafe_ordering_pilot_after_login";
+const REVIEW_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
@@ -65,34 +66,38 @@ function captionErrors(value) {
   if (!caption.trim() || [...caption].length > 2200) errors.push("caption_length_invalid");
   if ((caption.match(/#[\p{L}\p{N}_]+/gu) || []).length > 30) errors.push("caption_hashtag_limit_exceeded");
   if (/https?:\/\/|www\.|languagestudio\.uk/iu.test(caption)) errors.push("caption_must_use_profile_link_cta");
-  if (!/(?:language cafe|랭귀지\s*카페)/iu.test(caption)) errors.push("caption_product_name_missing");
-  if (!/(?:프로필\s*링크|(?:link in (?:my |the )?(?:profile|bio)|profile link))/iu.test(caption)) {
+  if (!/\bLanguage Cafe\b/iu.test(caption)) errors.push("caption_product_name_missing");
+  if (!/(?:link in (?:my |the |this )?(?:profile|bio)|profile link)/iu.test(caption)) {
     errors.push("caption_profile_link_cta_missing");
+  }
+  const englishWords = caption.match(/\b[A-Za-z]+(?:['’-][A-Za-z]+)*\b/gu) || [];
+  const latinLetters = (caption.match(/[A-Za-z]/gu) || []).length;
+  const hangulSyllables = (caption.match(/[가-힣]/gu) || []).length;
+  if (englishWords.length < 20 || latinLetters < hangulSyllables * 2) {
+    errors.push("caption_english_language_required");
+  }
+  if (!/\bfree\b/iu.test(caption) || !/\bKorean\s+caf(?:e|é)(?=[\s.,!?:;—–-]|$)/iu.test(caption)
+      || !/\b(?:order|ordering)\b/iu.test(caption)
+      || !/\b(?:try|practice|start)\b/iu.test(caption)
+      || !/\b(?:pilot|mission)\b/iu.test(caption)
+      || !/\b(?:read|know|recognize)\s+Hangul\b/iu.test(caption)) {
+    errors.push("caption_korean_cafe_pilot_action_missing");
+  }
+  if (/(?:\b(?:5|five)[ -]min(?:ute)?s?\b|5\s*분|\bAI\s+English\b|\bEnglish\s+(?:AI\s+)?(?:conversation|speaking)\b|\bsave\s+(?:and\s+)?review\s+(?:your\s+)?sentences?\b)/iu.test(caption)) {
+    errors.push("caption_retired_or_unverified_offer_claim");
   }
   if (/\b(?:guaranteed|fluent in|unlimited|discount|subscription|checkout|buy now|purchase now|free forever)\b/iu.test(caption)
       || /(?:\$|£|€|₩)\s*\d/u.test(caption)
       || /(?:무제한|보장|평생\s*무료|단기간\s*완성|할인|구독|결제|구매|가격)/u.test(caption)) {
     errors.push("caption_unverified_commercial_claim");
   }
-  if (/(?:\bfree\b|무료)/iu.test(caption) && !/(?:5\s*분|\b(?:5|five)[ -]minute)/iu.test(caption)) {
-    errors.push("caption_free_duration_missing");
-  }
   return errors;
-}
-
-function detectedClaims(caption) {
-  const claims = [];
-  if (/(?:\bfree\b|무료|5\s*분|\b(?:5|five)[ -]minute|\bAI\b|인공지능)/iu.test(caption)) {
-    claims.push(CLAIM_CONVERSATION);
-  }
-  if (/(?:저장|복습|\bsave\b|\breview\b)/iu.test(caption)) claims.push(CLAIM_SAVE_REVIEW);
-  return claims;
 }
 
 function isFreshEvidence(value, now) {
   const checkedAt = Date.parse(value);
   return Number.isFinite(checkedAt) && checkedAt <= now.getTime()
-    && now.getTime() - checkedAt <= REVIEW_MAX_AGE_MS;
+    && now.getTime() - checkedAt < REVIEW_MAX_AGE_MS;
 }
 
 function editorialReviewErrors(job, now = new Date()) {
@@ -105,18 +110,27 @@ function editorialReviewErrors(job, now = new Date()) {
       || review?.imageSha256 !== String(job?.content?.image?.sha256 || "")) {
     errors.push("editorial_review_content_binding_mismatch");
   }
-  if (review?.evidence?.homepage?.url !== "https://languagestudio.uk/"
-      || review?.evidence?.profile?.website !== "https://languagestudio.uk/"
+  if (review?.destinationUrl !== MISSION_URL
+      || review?.destinationUrl !== job?.content?.destinationUrl) {
+    errors.push("editorial_review_destination_binding_mismatch");
+  }
+  if (review?.evidence?.homepage?.url !== HOME_URL
+      || review?.evidence?.homepage?.linksToDestination !== true
+      || review?.evidence?.mission?.url !== MISSION_URL
+      || review?.evidence?.mission?.freePilotVerified !== true
+      || review?.evidence?.mission?.orderPracticeVerified !== true
+      || review?.evidence?.mission?.hangulReaderPrerequisiteVerified !== true
+      || review?.evidence?.mission?.loginRequiredVerified !== true
+      || review?.evidence?.mission?.noCardRequiredVerified !== true
+      || review?.evidence?.profile?.website !== HOME_URL
       || review?.evidence?.profile?.username !== ACCOUNT_USERNAME
       || !isFreshEvidence(review?.evidence?.homepage?.checkedAt, now)
+      || !isFreshEvidence(review?.evidence?.mission?.checkedAt, now)
       || !isFreshEvidence(review?.evidence?.profile?.checkedAt, now)) {
     errors.push("editorial_review_evidence_missing_or_stale");
   }
   const approved = review?.evidence?.approvedClaimIds;
-  const detected = detectedClaims(String(job?.content?.caption || ""));
-  if (!Array.isArray(approved) || !approved.length || !detected.length
-      || approved.some(claim => ![CLAIM_CONVERSATION, CLAIM_SAVE_REVIEW].includes(claim))
-      || detected.some(claim => !approved.includes(claim))) {
+  if (!Array.isArray(approved) || approved.length !== 1 || approved[0] !== CLAIM_KOREAN_CAFE_PILOT) {
     errors.push("editorial_review_claims_mismatch");
   }
   return errors;
@@ -129,6 +143,7 @@ function validateJob(job, { now = new Date() } = {}) {
   if (job?.channel !== "instagram" || job?.strategyVersion !== STRATEGY_VERSION) errors.push("strategy_invalid");
   if (job?.workflow?.status !== "approved") errors.push("job_not_approved");
   if (job?.published || job?.workflow?.postPublishVerification) errors.push("job_already_published");
+  if (job?.content?.destinationUrl !== MISSION_URL) errors.push("destination_url_invalid");
   errors.push(...captionErrors(job?.content?.caption));
   errors.push(...editorialReviewErrors(job, now));
   try { hostedImageUrl(job?.content?.image?.url); } catch (error) { errors.push(error.message); }
@@ -148,13 +163,6 @@ function sessionValues(value) {
     throw Error("promo_instagram_session_invalid_or_wrong_account");
   }
   return { accessToken: s.accessToken, graphVersion: s.graphVersion, accountId, pageId };
-}
-
-async function readSession(sessionPath = DEFAULT_SESSION_PATH) {
-  // GitHub Actions passes a complete session object; local use reads the same
-  // private session file. Neither the token nor a Graph paging URL is logged.
-  const raw = process.env.INSTAGRAM_SESSION_JSON || await fs.readFile(sessionPath, "utf8");
-  return sessionValues(raw);
 }
 
 async function readJob(jobPath) {
@@ -271,7 +279,9 @@ async function verifyHostedImage(image, fetchImpl = globalThis.fetch) {
   return { bytes: bytes.length, sha256: actualHash, width: metadata.width, height: metadata.height };
 }
 
-function createInstagramApi({ fetchImpl = globalThis.fetch, timeoutMs = 20000 } = {}) {
+// Transport construction is intentionally private. The public publisher below
+// cannot reach it until a trusted remote claim/intent runner is implemented.
+function createInstagramApi({ fetchImpl, timeoutMs = 20000 } = {}) {
   if (typeof fetchImpl !== "function") throw Error("promo_fetch_unavailable");
 
   async function request(session, method, object, { query = {}, form = null } = {}) {
@@ -379,17 +389,17 @@ async function assertCloudV3Permit(job, jobSha256, verifier, now = new Date()) {
   }
 }
 
-async function publishPromoJob({ jobPath, jobsDir = JOBS_DIR, lockDir = LOCK_DIR,
-  session: injectedSession, sessionPath = DEFAULT_SESSION_PATH,
-  api: injectedApi, imageFetch = globalThis.fetch, clock = () => new Date(),
-  cloudPermitVerifier } = {}) {
+async function publishPromoJobInternalForTests({ jobPath, jobsDir, lockDir,
+  session: injectedSession, api: injectedApi, imageFetch, clock = () => new Date() } = {}) {
+  if (!injectedSession || !injectedApi || typeof imageFetch !== "function") {
+    throw Error("promo_test_transport_required");
+  }
   const resolved = resolveJobPath(jobPath, jobsDir);
   const initial = await readJob(resolved);
   const errors = validateJob(initial.job, { now: clock() });
   if (errors.length) throw Error(`promo_job_preflight_blocked_${errors.join("_")}`);
-  await assertCloudV3Permit(initial.job, initial.hash, cloudPermitVerifier, clock());
-  const session = injectedSession ? sessionValues(injectedSession) : await readSession(sessionPath);
-  const api = injectedApi || createInstagramApi();
+  const session = sessionValues(injectedSession);
+  const api = injectedApi;
   const lockPath = path.join(lockDir, `${initial.job.id}.json`);
   const lock = { jobId: initial.job.id, jobSha256: initial.hash, channel: "instagram",
     strategyVersion: STRATEGY_VERSION, stage: "locked_before_api", startedAt: clock().toISOString(),
@@ -444,6 +454,89 @@ async function publishPromoJob({ jobPath, jobsDir = JOBS_DIR, lockDir = LOCK_DIR
   }
 }
 
+// Fail closed even if a caller supplies a forged approved job, injected API,
+// CLOUD flag or permit verifier. A future trusted runner must bind an external
+// editorial approval, remote claim and durable create/publish intent before
+// replacing this gate. Local job JSON is not an authority to post.
+async function publishPromoJob() {
+  throw Error("promo_publish_disabled_pending_trusted_remote_claim_and_intent");
+}
+
+// A hermetic seam keeps the exact-once flow under test without accepting any
+// caller-provided session, API or fetch implementation. It never touches Meta.
+async function simulatePromoJobForTests({ job, imageBytes, behavior = {}, attempts = 1 } = {}) {
+  if (!job || !Buffer.isBuffer(imageBytes) || attempts < 1 || attempts > 2) {
+    throw Error("promo_test_fixture_invalid");
+  }
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "promo-publisher-sim-"));
+  const jobsDir = path.join(tempRoot, "jobs");
+  const lockDir = path.join(tempRoot, "locks");
+  const jobPath = path.join(jobsDir, `${job.id}.json`);
+  const calls = { getApp: 0, getProfile: 0, getPage: 0, getPermissions: 0,
+    listMedia: 0, createContainer: 0, publishContainer: 0, getMedia: 0 };
+  const post = { id: "222", caption: job.content.caption, media_type: "IMAGE",
+    permalink: "https://www.instagram.com/p/Promo123/", timestamp: "2026-09-25T00:00:00+0000" };
+  const api = {
+    async getApp() { calls.getApp += 1; return { id: APP_ID }; },
+    async getProfile() { calls.getProfile += 1; return { id: "123456", username: ACCOUNT_USERNAME,
+      website: behavior.website || HOME_URL }; },
+    async getPage() { calls.getPage += 1; return { id: "987654",
+      instagram_business_account: { id: behavior.pageAccountId || "123456" } }; },
+    async getPermissions() { calls.getPermissions += 1;
+      return { data: ["instagram_basic", "instagram_content_publish", "pages_show_list", "pages_read_engagement"]
+        .map(permission => ({ permission, status: "granted" })) }; },
+    async listMedia() { calls.listMedia += 1;
+      return behavior.duplicate || calls.listMedia > 1 ? [post] : []; },
+    async createContainer() { calls.createContainer += 1; return "111"; },
+    async publishContainer() { calls.publishContainer += 1;
+      if (behavior.failPublish) throw Error("simulated ambiguous response");
+      return "222"; },
+    async getMedia() { calls.getMedia += 1; return post; }
+  };
+  const session = { accessToken: "hermetic-test-token", graphVersion: "v23.0", accountId: "123456",
+    selectedAccount: { accountId: "123456", pageId: "987654", username: ACCOUNT_USERNAME } };
+  try {
+    await fs.mkdir(jobsDir);
+    await fs.writeFile(jobPath, JSON.stringify(job), "utf8");
+    const outcomes = [];
+    for (let i = 0; i < attempts; i += 1) {
+      try {
+        const result = await publishPromoJobInternalForTests({ jobPath, jobsDir, lockDir,
+          session, api, imageFetch: async () => new Response(imageBytes,
+            { headers: { "content-type": "image/jpeg" } }) });
+        outcomes.push({ result });
+      } catch (error) { outcomes.push({ error: error.message }); }
+    }
+    const savedJob = JSON.parse(await fs.readFile(jobPath, "utf8"));
+    const lock = await fs.readFile(path.join(lockDir, `${job.id}.json`), "utf8")
+      .then(JSON.parse, () => null);
+    return { outcomes, calls, savedJob, lock };
+  } finally {
+    const temp = path.resolve(os.tmpdir());
+    if (path.resolve(tempRoot).startsWith(`${temp}${path.sep}`)
+        && path.basename(tempRoot).startsWith("promo-publisher-sim-")) {
+      await fs.rm(tempRoot, { recursive: true, force: true });
+    }
+  }
+}
+
+async function simulateInstagramTransportForTests({ imageUrl, caption } = {}) {
+  const requests = [];
+  const fetchImpl = async (url, options) => {
+    const form = options.body ? new URLSearchParams(options.body) : null;
+    requests.push({ pathname: url.pathname, method: options.method,
+      imageUrl: form?.get("image_url") || null, caption: form?.get("caption") || null,
+      creationId: form?.get("creation_id") || null });
+    return new Response(JSON.stringify({ id: requests.length === 1 ? "111" : "222" }),
+      { headers: { "content-type": "application/json" } });
+  };
+  const api = createInstagramApi({ fetchImpl });
+  const session = { accountId: "123456", accessToken: "hermetic-test-token", graphVersion: "v23.0" };
+  const containerId = await api.createContainer(session, { imageUrl, caption });
+  const mediaId = await api.publishContainer(session, containerId);
+  return { containerId, mediaId, requests };
+}
+
 function parseArgs(argv) {
   const options = { job: null, publish: false, dryRun: false };
   for (let i = 0; i < argv.length; i += 1) {
@@ -460,13 +553,13 @@ function parseArgs(argv) {
 
 async function runCli(argv = process.argv.slice(2), dependencies = {}) {
   const options = parseArgs(argv);
+  if (options.publish) return publishPromoJob();
   const jobPath = resolveJobPath(options.job, dependencies.jobsDir || JOBS_DIR);
   const { job } = await readJob(jobPath);
   const errors = validateJob(job, { now: dependencies.clock ? dependencies.clock() : new Date() });
   if (errors.length) throw Error(`promo_job_preflight_blocked_${errors.join("_")}`);
-  if (!options.publish) return { status: "dry_run", jobId: job.id, strategyVersion: STRATEGY_VERSION,
+  return { status: "dry_run", jobId: job.id, strategyVersion: STRATEGY_VERSION,
     wouldPublish: false, sessionRead: false, apiCalls: 0 };
-  return publishPromoJob({ jobPath, ...dependencies });
 }
 
 if (require.main === module) {
@@ -475,7 +568,8 @@ if (require.main === module) {
       ? error.message : "promo_publish_failed_without_secret_details"); process.exitCode = 1; });
 }
 
-module.exports = { APP_ID, STRATEGY_VERSION, acquireLock, assertCloudV3Permit, captionErrors, createInstagramApi,
+module.exports = { APP_ID, STRATEGY_VERSION, acquireLock, assertCloudV3Permit, captionErrors,
   duplicateMedia, hostedImageUrl, isExpectedProfileWebsite, normalizeCaption, parseArgs,
   publishPromoJob, readLimitedBytes, resolveJobPath, runCli, sessionValues, sha256,
+  simulateInstagramTransportForTests, simulatePromoJobForTests,
   validateJob, verifyHostedImage, verifyIdentity, verifyPublishedMedia };

@@ -9,20 +9,24 @@ const sharp = require("sharp");
 const {
   APP_ID,
   assertCloudV3Permit,
-  createInstagramApi,
   parseArgs,
   publishPromoJob,
   runCli,
   sha256,
+  simulateInstagramTransportForTests,
+  simulatePromoJobForTests,
   validateJob,
   verifyHostedImage,
   verifyIdentity,
   verifyPublishedMedia
 } = require("./publish-promo.cjs");
 
-const CAPTION = "카페에서 영어 주문이 막힐 때, 랭귀지 카페에서 로그인 후 5분 무료 AI 영어 대화를 해보세요. "
-  + "프로필 링크에서 ‘여행 영어’ 메뉴를 열어 시작할 수 있어요.";
+const CAPTION = "At a Korean café, the barista asks, ‘For here or to go?’ Try saying 포장해 주세요 "
+  + "when you want takeaway. If you can read Hangul, Language Cafe's free Korean café mission "
+  + "lets you practice placing an order with English guidance. Log in to start; no card is needed. "
+  + "Open the link in this profile, then choose the Korean café mission.";
 const IMAGE_URL = "https://abc12345.language-cafe-instagram-assets.pages.dev/promo/lesson.jpg";
+const MISSION_URL = "https://languagestudio.uk/missions/korean-cafe/";
 
 async function fixture(t) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "promo-publisher-test-"));
@@ -44,19 +48,25 @@ async function fixture(t) {
     channel: "instagram",
     strategyVersion: "channel-split-v3",
     workflow: { status: "approved" },
-    content: { caption: CAPTION, image: { url: IMAGE_URL, sha256: sha256(bytes) } },
+    content: { caption: CAPTION, destinationUrl: MISSION_URL,
+      image: { url: IMAGE_URL, sha256: sha256(bytes) } },
     editorialReview: {
       status: "approved",
       captionSha256: sha256(CAPTION),
       imageSha256: sha256(bytes),
+      destinationUrl: MISSION_URL,
       offerClaimApproved: true,
       landingMatchApproved: true,
       profileCtaApproved: true,
       visualApproved: true,
       evidence: {
-        homepage: { url: "https://languagestudio.uk/", checkedAt: reviewedAt },
+        homepage: { url: "https://languagestudio.uk/", linksToDestination: true, checkedAt: reviewedAt },
+        mission: { url: MISSION_URL, checkedAt: reviewedAt,
+          freePilotVerified: true, orderPracticeVerified: true,
+          hangulReaderPrerequisiteVerified: true, loginRequiredVerified: true,
+          noCardRequiredVerified: true },
         profile: { website: "https://languagestudio.uk/", username: "mindulmin", checkedAt: reviewedAt },
-        approvedClaimIds: ["free_five_minute_ai_english_conversation_after_login"]
+        approvedClaimIds: ["free_korean_cafe_ordering_pilot_after_login"]
       }
     }
   };
@@ -66,33 +76,6 @@ async function fixture(t) {
   const session = { accessToken: "test-secret-must-never-appear", graphVersion: "v23.0", accountId: "123456",
     selectedAccount: { accountId: "123456", pageId: "987654", username: "mindulmin" } };
   return { root, jobsDir, lockDir, bytes, job, jobPath, imageFetch, session };
-}
-
-function mockApi({ duplicate = false, pageAccountId = "123456", website = "https://languagestudio.uk/",
-  failPublish = false } = {}) {
-  const calls = { getApp: 0, getProfile: 0, getPage: 0, getPermissions: 0,
-    listMedia: 0, createContainer: 0, publishContainer: 0, getMedia: 0 };
-  const post = { id: "222", caption: CAPTION, media_type: "IMAGE",
-    permalink: "https://www.instagram.com/p/Promo123/", timestamp: "2026-09-25T00:00:00+0000" };
-  const api = {
-    async getApp() { calls.getApp += 1; return { id: APP_ID }; },
-    async getProfile() { calls.getProfile += 1; return { id: "123456", username: "mindulmin", website }; },
-    async getPage() { calls.getPage += 1; return { id: "987654", instagram_business_account: { id: pageAccountId } }; },
-    async getPermissions() {
-      calls.getPermissions += 1;
-      return { data: ["instagram_basic", "instagram_content_publish", "pages_show_list", "pages_read_engagement"]
-        .map(permission => ({ permission, status: "granted" })) };
-    },
-    async listMedia() { calls.listMedia += 1; return duplicate || calls.listMedia > 1 ? [post] : []; },
-    async createContainer() { calls.createContainer += 1; return "111"; },
-    async publishContainer() {
-      calls.publishContainer += 1;
-      if (failPublish) throw Error("network failed token=test-secret-must-never-appear");
-      return "222";
-    },
-    async getMedia() { calls.getMedia += 1; return post; }
-  };
-  return { api, calls, post };
 }
 
 test("dry-run validates the approved job without session, network or lock", async t => {
@@ -111,19 +94,28 @@ test("dry-run validates the approved job without session, network or lock", asyn
   assert.throws(() => parseArgs(["--job", f.jobPath, "--dry-run", "--publish"]), /promo_conflicting_modes/u);
 });
 
-test("cloud publishing cannot start without a trusted v3 remote claim permit", async t => {
+test("public publish paths are blocked before any social write in local and cloud modes", async t => {
   const f = await fixture(t);
   const previousCloud = process.env.LANGUAGE_CAFE_CLOUD;
   const previousRunId = process.env.GITHUB_RUN_ID;
-  process.env.LANGUAGE_CAFE_CLOUD = "1";
-  process.env.GITHUB_RUN_ID = "12345";
   try {
-    const { api, calls } = mockApi();
-    await assert.rejects(publishPromoJob({ jobPath: f.jobPath, jobsDir: f.jobsDir,
-      lockDir: f.lockDir, session: f.session, api, imageFetch: f.imageFetch }),
-    /promo_cloud_v3_permit_verifier_missing/u);
-    assert.equal(calls.getApp, 0);
-    assert.equal(calls.createContainer, 0);
+    for (const cloudMode of [undefined, "1"]) {
+      if (cloudMode === undefined) delete process.env.LANGUAGE_CAFE_CLOUD;
+      else process.env.LANGUAGE_CAFE_CLOUD = cloudMode;
+      process.env.GITHUB_RUN_ID = "12345";
+      let socialWrites = 0;
+      const injected = {
+        jobsDir: f.jobsDir, lockDir: f.lockDir, session: f.session,
+        api: { createContainer() { socialWrites += 1; }, publishContainer() { socialWrites += 1; } },
+        imageFetch() { socialWrites += 1; },
+        cloudPermitVerifier: async () => ({ verified: true, jobId: f.job.id })
+      };
+      await assert.rejects(publishPromoJob({ jobPath: f.jobPath, ...injected }),
+        /promo_publish_disabled_pending_trusted_remote_claim_and_intent/u);
+      await assert.rejects(runCli(["--job", f.jobPath, "--publish"], injected),
+        /promo_publish_disabled_pending_trusted_remote_claim_and_intent/u);
+      assert.equal(socialWrites, 0);
+    }
     await assert.rejects(fs.stat(f.lockDir), { code: "ENOENT" });
     await assert.rejects(assertCloudV3Permit(f.job, sha256(JSON.stringify(f.job)),
       async () => ({ verified: true, strategyVersion: "instagram-study-companion-link-v2" })),
@@ -147,7 +139,9 @@ test("preflight rejects unapproved, misleading or misplaced promotional content"
   assert.ok(validateJob(bad).includes("editorial_review_content_binding_mismatch"));
   assert.ok(validateJob(bad).includes("promo_image_url_must_use_immutable_project_https_jpeg"));
   await fs.writeFile(f.jobPath, JSON.stringify(bad));
-  await assert.rejects(runCli(["--job", f.jobPath, "--publish"], { jobsDir: f.jobsDir }), /promo_job_preflight_blocked/u);
+  await assert.rejects(runCli(["--job", f.jobPath], { jobsDir: f.jobsDir }), /promo_job_preflight_blocked/u);
+  await assert.rejects(runCli(["--job", f.jobPath, "--publish"], { jobsDir: f.jobsDir }),
+    /promo_publish_disabled_pending_trusted_remote_claim_and_intent/u);
   await assert.rejects(fs.stat(f.lockDir), { code: "ENOENT" });
 });
 
@@ -157,52 +151,80 @@ test("public URL rejects alternate port and normalized traversal paths", async t
     "https://abc12345.language-cafe-instagram-assets.pages.dev:8443/promo/lesson.jpg",
     "https://abc12345.language-cafe-instagram-assets.pages.dev/promo/../lesson.jpg",
     "https://abc12345.language-cafe-instagram-assets.pages.dev/promo/%2e%2e/lesson.jpg",
-    "https://abc12345.language-cafe-instagram-assets.pages.dev/promo//lesson.jpg"
+    "https://abc12345.language-cafe-instagram-assets.pages.dev/promo//lesson.jpg",
+    "https://main.language-cafe-instagram-assets.pages.dev/promo/lesson.jpg",
+    "https://feature-cards.language-cafe-instagram-assets.pages.dev/promo/lesson.jpg"
   ]) {
     f.job.content.image.url = url;
     assert.ok(validateJob(f.job).includes("promo_image_url_must_use_immutable_project_https_jpeg"), url);
   }
 });
 
-test("Korean save-and-review angle is allowed when its exact copy and claim are approved", async t => {
+test("old English-conversation claim is blocked despite an otherwise approved Korean café offer", async t => {
   const f = await fixture(t);
-  const caption = "영어 대화 중 기억하고 싶은 문장을 저장해 두고 나중에 복습해 보세요. 랭귀지 카페는 프로필 링크에서 열 수 있어요.";
-  f.job.content.caption = caption;
-  f.job.editorialReview.captionSha256 = sha256(caption);
-  f.job.editorialReview.evidence.approvedClaimIds = ["save_and_review_sentence"];
   assert.deepEqual(validateJob(f.job), []);
+  const retired = `${CAPTION} Start a free five-minute AI English conversation after login.`;
+  f.job.content.caption = retired;
+  f.job.editorialReview.captionSha256 = sha256(retired);
+  assert.ok(validateJob(f.job).includes("caption_retired_or_unverified_offer_claim"));
   f.job.editorialReview.evidence.approvedClaimIds = ["free_five_minute_ai_english_conversation_after_login"];
   assert.ok(validateJob(f.job).includes("editorial_review_claims_mismatch"));
 });
 
+test("promo approval requires English Korean-café copy, the exact mission destination and fresh three-surface evidence", async t => {
+  const f = await fixture(t);
+  assert.deepEqual(validateJob(f.job), []);
+  const korean = "랭귀지 카페에서 무료 한국어 카페 주문 연습을 시작하세요. Language Cafe profile link.";
+  f.job.content.caption = korean;
+  f.job.editorialReview.captionSha256 = sha256(korean);
+  assert.ok(validateJob(f.job).includes("caption_english_language_required"));
+  assert.ok(validateJob(f.job).includes("caption_korean_cafe_pilot_action_missing"));
+  f.job.content.caption = CAPTION;
+  f.job.editorialReview.captionSha256 = sha256(CAPTION);
+  f.job.content.destinationUrl = "https://languagestudio.uk/";
+  assert.ok(validateJob(f.job).includes("destination_url_invalid"));
+  assert.ok(validateJob(f.job).includes("editorial_review_destination_binding_mismatch"));
+  f.job.content.destinationUrl = MISSION_URL;
+  f.job.editorialReview.evidence.homepage.linksToDestination = false;
+  assert.ok(validateJob(f.job).includes("editorial_review_evidence_missing_or_stale"));
+  f.job.editorialReview.evidence.homepage.linksToDestination = true;
+  f.job.editorialReview.evidence.mission.url = "https://languagestudio.uk/membership/";
+  assert.ok(validateJob(f.job).includes("editorial_review_evidence_missing_or_stale"));
+  f.job.editorialReview.evidence.mission.url = MISSION_URL;
+  f.job.editorialReview.evidence.mission.freePilotVerified = false;
+  assert.ok(validateJob(f.job).includes("editorial_review_evidence_missing_or_stale"));
+  f.job.editorialReview.evidence.mission.freePilotVerified = true;
+  f.job.editorialReview.evidence.mission.checkedAt = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  assert.ok(validateJob(f.job).includes("editorial_review_evidence_missing_or_stale"));
+});
+
 test("published promotion requires account, page, image and exact official readback", async t => {
   const f = await fixture(t);
-  const { api, calls } = mockApi();
-  const result = await publishPromoJob({ jobPath: f.jobPath, jobsDir: f.jobsDir,
-    lockDir: f.lockDir, session: f.session, api, imageFetch: f.imageFetch });
+  const sim = await simulatePromoJobForTests({ job: f.job, imageBytes: f.bytes, attempts: 2 });
+  const result = sim.outcomes[0].result;
   assert.equal(result.status, "published_verified");
   assert.equal(result.permalink, "https://www.instagram.com/p/Promo123/");
+  const { calls } = sim;
   assert.equal(calls.createContainer, 1);
   assert.equal(calls.publishContainer, 1);
   assert.equal(calls.listMedia, 2);
-  const saved = JSON.parse(await fs.readFile(f.jobPath, "utf8"));
+  const saved = sim.savedJob;
   assert.equal(saved.workflow.status, "published");
   assert.equal(saved.workflow.postPublishVerification.normalizedCaptionMatchCount, 1);
-  const lock = JSON.parse(await fs.readFile(path.join(f.lockDir, `${f.job.id}.json`), "utf8"));
+  const lock = sim.lock;
   assert.equal(lock.stage, "published_verified");
   assert.equal(lock.containerCreateAttempts, 1);
   assert.equal(lock.publishAttempts, 1);
-  await assert.rejects(publishPromoJob({ jobPath: f.jobPath, jobsDir: f.jobsDir,
-    lockDir: f.lockDir, session: f.session, api, imageFetch: f.imageFetch }), /job_already_published/u);
+  assert.match(sim.outcomes[1].error, /job_already_published/u);
   assert.equal(calls.createContainer, 1);
 });
 
 test("official duplicate keeps a durable lock and never creates a container", async t => {
   const f = await fixture(t);
-  const { api, calls } = mockApi({ duplicate: true });
-  await assert.rejects(publishPromoJob({ jobPath: f.jobPath, jobsDir: f.jobsDir,
-    lockDir: f.lockDir, session: f.session, api, imageFetch: f.imageFetch }), /promo_duplicate_official_caption/u);
-  const lock = JSON.parse(await fs.readFile(path.join(f.lockDir, `${f.job.id}.json`), "utf8"));
+  const sim = await simulatePromoJobForTests({ job: f.job, imageBytes: f.bytes,
+    behavior: { duplicate: true } });
+  assert.match(sim.outcomes[0].error, /promo_duplicate_official_caption/u);
+  const { calls, lock } = sim;
   assert.equal(lock.stage, "blocked_manual_reconciliation_required");
   assert.equal(lock.containerCreateAttempts, 0);
   assert.equal(calls.createContainer, 0);
@@ -211,12 +233,10 @@ test("official duplicate keeps a durable lock and never creates a container", as
 
 test("wrong linked Page or profile destination blocks before image and publishing", async t => {
   const f = await fixture(t);
-  const { api, calls } = mockApi({ pageAccountId: "999999" });
-  let imageReads = 0;
-  await assert.rejects(publishPromoJob({ jobPath: f.jobPath, jobsDir: f.jobsDir,
-    lockDir: f.lockDir, session: f.session, api,
-    imageFetch: async () => { imageReads += 1; return f.imageFetch(); } }), /promo_page_account_link_not_verified/u);
-  assert.equal(imageReads, 0);
+  const sim = await simulatePromoJobForTests({ job: f.job, imageBytes: f.bytes,
+    behavior: { pageAccountId: "999999" } });
+  assert.match(sim.outcomes[0].error, /promo_page_account_link_not_verified/u);
+  const { calls } = sim;
   assert.equal(calls.createContainer, 0);
   assert.equal(calls.listMedia, 0);
   assert.throws(() => verifyIdentity({ app: { id: APP_ID },
@@ -229,32 +249,28 @@ test("wrong linked Page or profile destination blocks before image and publishin
 
 test("changed image bytes prevent the first create attempt", async t => {
   const f = await fixture(t);
-  const { api, calls } = mockApi();
   const different = await sharp({ create: { width: 1080, height: 1350,
     channels: 3, background: "#ff0000" } }).jpeg().toBuffer();
-  await assert.rejects(publishPromoJob({ jobPath: f.jobPath, jobsDir: f.jobsDir,
-    lockDir: f.lockDir, session: f.session, api,
-    imageFetch: async () => new Response(different, { headers: { "content-type": "image/jpeg" } }) }),
-  /promo_image_sha256_mismatch/u);
+  const sim = await simulatePromoJobForTests({ job: f.job, imageBytes: different });
+  assert.match(sim.outcomes[0].error, /promo_image_sha256_mismatch/u);
+  const { calls, lock } = sim;
   assert.equal(calls.createContainer, 0);
   assert.equal(calls.publishContainer, 0);
-  const lock = JSON.parse(await fs.readFile(path.join(f.lockDir, `${f.job.id}.json`), "utf8"));
   assert.equal(lock.stage, "blocked_manual_reconciliation_required");
 });
 
 test("ambiguous publish result is attempted once and blocks every repeat", async t => {
   const f = await fixture(t);
-  const { api, calls } = mockApi({ failPublish: true });
-  await assert.rejects(publishPromoJob({ jobPath: f.jobPath, jobsDir: f.jobsDir,
-    lockDir: f.lockDir, session: f.session, api, imageFetch: f.imageFetch }), /promo_unexpected_error/u);
+  const sim = await simulatePromoJobForTests({ job: f.job, imageBytes: f.bytes,
+    behavior: { failPublish: true }, attempts: 2 });
+  assert.match(sim.outcomes[0].error, /promo_unexpected_error/u);
+  const { calls, lock } = sim;
   assert.equal(calls.createContainer, 1);
   assert.equal(calls.publishContainer, 1);
-  const lock = JSON.parse(await fs.readFile(path.join(f.lockDir, `${f.job.id}.json`), "utf8"));
   assert.equal(lock.containerCreateAttempts, 1);
   assert.equal(lock.publishAttempts, 1);
-  assert.ok(!JSON.stringify(lock).includes("test-secret-must-never-appear"));
-  await assert.rejects(publishPromoJob({ jobPath: f.jobPath, jobsDir: f.jobsDir,
-    lockDir: f.lockDir, session: f.session, api, imageFetch: f.imageFetch }), /promo_publish_lock_exists/u);
+  assert.ok(!JSON.stringify(lock).includes("hermetic-test-token"));
+  assert.match(sim.outcomes[1].error, /promo_publish_lock_exists/u);
   assert.equal(calls.publishContainer, 1);
 });
 
@@ -268,22 +284,14 @@ test("readback needs one matching IMAGE with an official permalink", () => {
 });
 
 test("official Graph transport sends one image container and one publish request", async () => {
-  const requests = [];
-  const fetchImpl = async (url, options) => {
-    requests.push({ pathname: url.pathname, method: options.method,
-      body: options.body ? new URLSearchParams(options.body) : null });
-    return new Response(JSON.stringify({ id: requests.length === 1 ? "111" : "222" }),
-      { headers: { "content-type": "application/json" } });
-  };
-  const api = createInstagramApi({ fetchImpl });
-  const session = { accountId: "123456", accessToken: "secret", graphVersion: "v23.0" };
-  assert.equal(await api.createContainer(session, { imageUrl: IMAGE_URL, caption: CAPTION }), "111");
-  assert.equal(await api.publishContainer(session, "111"), "222");
+  const { containerId, mediaId, requests } = await simulateInstagramTransportForTests({ imageUrl: IMAGE_URL, caption: CAPTION });
+  assert.equal(containerId, "111");
+  assert.equal(mediaId, "222");
   assert.equal(requests[0].pathname, "/v23.0/123456/media");
-  assert.equal(requests[0].body.get("image_url"), IMAGE_URL);
-  assert.equal(requests[0].body.get("caption"), CAPTION);
+  assert.equal(requests[0].imageUrl, IMAGE_URL);
+  assert.equal(requests[0].caption, CAPTION);
   assert.equal(requests[1].pathname, "/v23.0/123456/media_publish");
-  assert.equal(requests[1].body.get("creation_id"), "111");
+  assert.equal(requests[1].creationId, "111");
   assert.equal(requests.length, 2);
 });
 

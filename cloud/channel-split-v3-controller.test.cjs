@@ -4,12 +4,12 @@ const { decide } = require('./channel-split-v3-controller.cjs');
 
 const NOW = '2026-09-25T01:00:00.000Z';
 const SHA = 'a'.repeat(64);
-const SITE = 'https://languagestudio.uk/?utm_source=threads&utm_medium=organic&utm_campaign=language_cafe&utm_content=coffee-order';
+const SITE = 'https://languagestudio.uk/missions/korean-cafe/?utm_source=threads&utm_medium=organic&utm_campaign=language_cafe&utm_content=coffee-order';
 const image = name => ({ url: `https://aabbccdd.language-cafe-instagram-assets.pages.dev/${name}.jpg`, sha256: SHA });
 const instagramJob = (id = 'ig-promo-001') => ({ schemaVersion: 1, id, channel: 'instagram', strategyVersion: 'channel-split-v3',
-  workflow: { status: 'approved' }, content: { caption: '주문 전에 영어가 막힌다면, 프로필 링크에서 5분 대화를 시작해 보세요.', image: image(id) } });
+  workflow: { status: 'approved' }, content: { caption: 'Try ordering in Korean at Language Cafe. Find the free cafe pilot through the profile link.', image: image(id) } });
 const threadsJob = (id = 'threads-card-001') => ({ schemaVersion: 1, id, channel: 'threads', strategyVersion: 'channel-split-v3',
-  workflow: { status: 'approved' }, content: { text: `Your friend suggests a board game.\n재미있어요 — It means “It's fun.”\nPractice at Language Cafe → ${SITE}`, siteUrl: SITE,
+  workflow: { status: 'approved' }, content: { text: `At a cafe, say 포장해 주세요. It means "Please make it to go."\nTry the free Korean cafe pilot at Language Cafe → ${SITE}`, siteUrl: SITE,
     images: [image(`${id}-1`), image(`${id}-2`)] } });
 const history = (channel, media = [], checkedAt = NOW) => ({
   source: channel === 'instagram' ? 'official_instagram_graph_api_recent_media' : 'official_threads_graph_api_recent_media',
@@ -122,6 +122,20 @@ test('unknown v3 schema, strategy, and malformed approved content fail closed by
   assert.equal(decide(input).channels.instagram.reason, 'approved_job_content_invalid');
   input.jobs[0].workflow.status = 'draft';
   assert.equal(decide(input).channels.instagram.reason, 'no_approved_job');
+});
+
+test('Threads candidate destination rejects root, unapproved tracking, and duplicate UTM keys', () => {
+  for (const siteUrl of [
+    'https://languagestudio.uk/',
+    `${SITE}&next=https://evil.example`,
+    `${SITE}&utm_source=threads`,
+    SITE.replace('utm_campaign=language_cafe', 'utm_campaign=other')
+  ]) {
+    const input = fixture();
+    input.jobs[1].content.siteUrl = siteUrl;
+    input.jobs[1].content.text = input.jobs[1].content.text.replace(SITE, siteUrl);
+    assert.equal(decide(input).channels.threads.reason, 'approved_job_content_invalid');
+  }
 });
 
 test('unresolved action, duplicate IDs and missing ledger are never treated as a fresh run', () => {

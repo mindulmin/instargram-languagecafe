@@ -1,0 +1,47 @@
+{
+  "status": "draft_only",
+  "cards": [
+    {
+      "file": "rendered/card-01.jpg",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 285325,
+      "sha256": "f78b812018635fd52d2d81ecd034538cd51de98a3fc6b99d44b4801dba193a55"
+    },
+    {
+      "file": "rendered/card-02.jpg",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 136218,
+      "sha256": "e11cab4bf995ed5216124ad71dc1d0faa85876ebacf5a8abd2db88c9e8d9dd66"
+    },
+    {
+      "file": "rendered/card-03.jpg",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 157048,
+      "sha256": "951beae98efe78c32fc2933a559b90ddfdb3f62825afbed61a7b165526fbaf2e"
+    },
+    {
+      "file": "rendered/card-04.jpg",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 168569,
+      "sha256": "0efb67b12e1d5e6371273be08f499902c576b3c6052ed993ba390fb171c9fb8d"
+    },
+    {
+      "file": "rendered/card-05.jpg",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 169232,
+      "sha256": "2adecff5fde880932dd094270a174939b6d77ce7996624e50c85b1bbd8d1780a"
+    },
+    {
+      "file": "rendered/card-06.jpg",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 231838,
+      "sha256": "c7a68d1e9babbf8b31593a333b0068cf9fca05bf9fc07c272db0ec980b3f014d"
+    }
+  ]
+}

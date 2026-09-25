@@ -5,12 +5,15 @@ and permit supplied by the trusted controller. A historical learning-pair
 permit is not valid here. If the v3 permit, reviewed art, or live destination
 check is missing, stop without a social API write.
 
-Make one original product-led image for one real English-speaking situation.
-The observed public offer is: choose a daily/travel/work menu, log in for a
-free five-minute AI English conversation, and save a line to practise again.
+Make one original product-led image for one real Korean café-ordering situation.
+The observed public offer on 2026-09-25 is a free Korean café pilot for
+beginners who read Hangul and follow English guidance, with login to start and
+no card required. Recheck the live homepage and `/missions/korean-cafe/` before
+approval; this offer recently changed. The English five-minute conversation
+offer is separate and must not be used as the pilot's promise.
 The site's claim and the finished post must match. Do not invent testimonials,
-pricing, conversion results, or a new feature. Use natural Korean for a Korean
-learner and accurate English for the example. End with a concrete profile-link
+pricing, conversion results, or a new feature. Use clear English for a foreign
+Korean learner and accurate Korean for the example. End with a concrete profile-link
 action; verify the Instagram profile website points to
 `https://languagestudio.uk/` before that CTA.
 

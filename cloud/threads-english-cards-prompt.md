@@ -12,11 +12,12 @@ for a foreign Korean learner to learn without leaving Threads. Check Korean
 accuracy, English explanations, register, readability, image order, image
 SHA-256, unique card-specific alternative text, and original visual work.
 The final caption is no more than 500 characters and ends with one exact
-`https://languagestudio.uk/` URL, optionally with only the approved Threads
-UTM fields. The CTA must accurately describe Language Cafe as a separate
-English-conversation practice offer; never imply that the site drills the
-Korean expression. Do not promise a price, outcome, or feature that the live
-site does not show. Record the audience-to-offer mismatch as a conversion risk.
+`https://languagestudio.uk/missions/korean-cafe/` URL, optionally with only the
+approved Threads UTM fields. Recheck the live mission immediately before
+approval. The CTA may invite a free Korean café-ordering pilot but must not
+imply that it drills the exact card expression unless verified. Paid English
+conversation plans are separate. Do not promise an outcome or feature the
+live mission does not show.
 
 Use immutable publicly readable card URLs. The dedicated v3 Threads publisher
 creates IMAGE carousel children and one CAROUSEL parent. The TEXT-only legacy

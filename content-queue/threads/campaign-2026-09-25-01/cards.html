@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>포장해 주세요 — Language Cafe Threads carousel draft</title>
+  <style>
+    :root { --ink:#173337; --teal:#145a57; --mint:#c5edda; --coral:#ef806c; --cream:#fff8ef; --citrus:#f4d969; --blue:#b9dce6; }
+    * { box-sizing:border-box; }
+    html, body { margin:0; padding:0; background:#d6d6d6; }
+    body { font-family: Arial, "Malgun Gothic", sans-serif; color:var(--ink); }
+    .card { width:1080px; height:1350px; position:relative; overflow:hidden; page-break-after:always; }
+    .credit { position:absolute; right:78px; bottom:62px; z-index:10; font-size:25px; font-weight:700; letter-spacing:.02em; }
+    .number { position:absolute; left:78px; bottom:64px; z-index:10; font-size:25px; font-weight:700; letter-spacing:.12em; }
+    .eyebrow { font-size:29px; font-weight:800; letter-spacing:.17em; text-transform:uppercase; }
+    h1, h2, p { margin:0; }
+    .korean { font-family:"Malgun Gothic", Arial, sans-serif; font-weight:800; letter-spacing:-.045em; }
+    .scene { background:#fff9f0 url("assets/mascot-takeaway-scene.png") center 49% / cover no-repeat; }
+    .scene::before { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,250,242,.97) 0%,rgba(255,250,242,.77) 30%,rgba(255,250,242,0) 56%); }
+    .scene .top { position:absolute; top:83px; left:78px; width:840px; }
+    .scene .eyebrow { color:var(--teal); }
+    .scene h1 { font-size:67px; line-height:1.08; letter-spacing:-.035em; margin-top:31px; max-width:830px; }
+    .scene .korean { font-size:91px; line-height:1.16; margin-top:33px; color:#0d4947; }
+    .scene .meaning { font-size:41px; font-weight:700; margin-top:13px; }
+    .scene .scene-pill { display:inline-flex; align-items:center; gap:14px; background:#fff9e2; border:3px solid #e8be72; border-radius:99px; padding:15px 26px; font-size:28px; font-weight:700; margin-top:24px; }
+    .scene .credit, .scene .number { color:#133e3c; text-shadow:0 1px 12px #fff; }
+
+    .meaning-card { background:#cdebdc; }
+    .meaning-card .left { position:absolute; left:78px; top:94px; width:760px; }
+    .meaning-card h2 { font-size:90px; line-height:1.04; letter-spacing:-.04em; margin-top:46px; }
+    .meaning-card .korean { font-size:93px; color:#075450; margin-top:62px; }
+    .meaning-card .translation { display:inline-block; background:#fffaf0; border-radius:28px; padding:31px 42px; font-size:67px; font-weight:800; margin-top:26px; box-shadow:15px 15px 0 #8fd2b6; }
+    .meaning-card .sentence { font-size:42px; line-height:1.27; margin-top:65px; width:720px; }
+    .meaning-card .arrow { position:absolute; bottom:250px; left:110px; width:600px; height:26px; border-radius:18px; background:#2b776c; transform:rotate(-7deg); }
+    .meaning-card .arrow::after { content:""; position:absolute; right:-7px; top:-14px; border-left:45px solid #2b776c; border-top:27px solid transparent; border-bottom:27px solid transparent; }
+    .meaning-card .bag { position:absolute; right:102px; bottom:120px; width:280px; height:300px; background:#dcae79; border-radius:17px 17px 25px 25px; transform:rotate(7deg); box-shadow:20px 20px 0 rgba(31,92,75,.17); }
+    .meaning-card .bag::before { content:""; position:absolute; width:100px; height:105px; border:17px solid #af7b50; border-bottom:0; border-radius:70px 70px 0 0; top:-88px; left:90px; }
+    .meaning-card .cup { position:absolute; right:248px; bottom:114px; width:160px; height:255px; background:#fff7e9; clip-path:polygon(0 0,100% 0,87% 100%,15% 100%); border-top:23px solid #bb715a; box-shadow:0 0 0 10px #fff; }
+
+    .dialogue { background:#17383e; color:#fff9e9; }
+    .dialogue .eyebrow { position:absolute; top:96px; left:78px; color:#afd9d0; }
+    .dialogue h2 { position:absolute; top:160px; left:78px; font-size:75px; line-height:1.08; width:870px; }
+    .dialogue .counter { position:absolute; top:402px; left:78px; width:924px; height:735px; border:4px solid #79aaa4; border-radius:44px; background:#24525a; }
+    .dialogue .staff { position:absolute; top:463px; left:134px; width:720px; border-radius:33px 33px 33px 6px; background:#b8dce6; color:#183b43; padding:31px 43px; font-size:31px; }
+    .dialogue .staff .korean { display:block; margin-top:14px; font-size:64px; }
+    .dialogue .staff .en { display:block; margin-top:11px; font-size:40px; }
+    .dialogue .you { position:absolute; top:775px; right:132px; width:750px; border-radius:33px 33px 6px 33px; background:#fff2cc; color:#17383e; padding:29px 40px; font-size:31px; }
+    .dialogue .you .korean { display:block; margin-top:15px; font-size:70px; }
+    .dialogue .you .en { display:block; margin-top:10px; font-size:40px; }
+    .dialogue .cup-mark { position:absolute; bottom:178px; left:158px; width:128px; height:160px; background:#ecb281; clip-path:polygon(0 0,100% 0,83% 100%,17% 100%); }
+    .dialogue .cup-mark::before { content:""; position:absolute; left:0; top:0; width:128px; height:20px; background:#fff4dd; }
+    .dialogue .credit, .dialogue .number { color:#fff9e9; }
+
+    .usage { background:#ffeadf; }
+    .usage .eyebrow { position:absolute; top:93px; left:78px; color:#9c5145; }
+    .usage h2 { position:absolute; top:157px; left:78px; width:880px; font-size:76px; line-height:1.06; }
+    .usage .question { position:absolute; top:380px; left:78px; font-size:42px; line-height:1.24; width:850px; }
+    .usage .path { position:absolute; left:118px; top:584px; width:843px; height:420px; border-radius:48px; border:5px solid #cc7869; background:#fff8ec; display:flex; align-items:center; justify-content:space-around; }
+    .usage .counter-icon { width:240px; height:200px; border-radius:20px; background:#b2d8e3; position:relative; }
+    .usage .counter-icon::before { content:""; position:absolute; top:38px; left:85px; width:88px; height:116px; background:#fff; clip-path:polygon(0 0,100% 0,82% 100%,17% 100%); }
+    .usage .counter-icon::after { content:""; position:absolute; top:15px; left:76px; width:105px; height:29px; border-radius:8px; background:#194a50; }
+    .usage .step-arrow { font-size:103px; color:#a65d51; font-weight:900; }
+    .usage .bag-icon { width:225px; height:205px; border-radius:16px; background:#d9a474; position:relative; }
+    .usage .bag-icon::before { content:""; position:absolute; left:63px; top:-69px; width:100px; height:74px; border:17px solid #a67050; border-bottom:0; border-radius:70px 70px 0 0; }
+    .usage .answer { position:absolute; top:1055px; left:78px; width:900px; font-size:39px; line-height:1.25; }
+    .usage .answer .korean { color:#8e4136; font-size:61px; }
+
+    .practice { background:#e7f4f3; }
+    .practice .eyebrow { position:absolute; top:97px; left:78px; color:#226f6c; }
+    .practice h2 { position:absolute; top:166px; left:78px; font-size:80px; line-height:1.06; }
+    .practice .order-ticket { position:absolute; top:360px; left:92px; width:505px; height:293px; padding:37px; background:#fff9ed; border-radius:25px; box-shadow:15px 16px 0 #c2d2ca; transform:rotate(-5deg); }
+    .practice .order-ticket .line { border-top:4px dashed #8aa89c; margin-top:36px; }
+    .practice .order-ticket strong { display:block; font-size:31px; }
+    .practice .order-ticket span { display:block; font-size:59px; font-weight:800; margin-top:42px; }
+    .practice .staff-prompt { position:absolute; top:595px; right:73px; width:670px; background:#bddce6; border-radius:38px; padding:40px 44px; font-size:43px; font-weight:750; line-height:1.22; box-shadow:15px 18px 0 #85b9c9; }
+    .practice .blank { position:absolute; top:877px; left:98px; width:870px; height:215px; border:5px dashed #1d6d69; border-radius:39px; display:flex; align-items:center; justify-content:center; gap:24px; color:#1d5c5a; font-size:45px; font-weight:800; }
+    .practice .mic { font-size:76px; line-height:1; }
+    .practice .cue { position:absolute; top:1132px; left:78px; font-size:38px; }
+
+    .recall { background:#164f4d; color:#fff9e9; }
+    .recall .eyebrow { position:absolute; top:92px; left:78px; color:#bee9da; }
+    .recall h2 { position:absolute; top:166px; left:78px; font-size:89px; line-height:1.06; }
+    .recall .timeline { position:absolute; top:426px; left:86px; width:900px; height:155px; display:flex; justify-content:space-between; align-items:center; }
+    .recall .dot { width:125px; height:125px; border-radius:50%; background:#f3d978; display:flex; align-items:center; justify-content:center; color:#214947; font-size:53px; font-weight:900; }
+    .recall .connector { flex:1; height:16px; background:#85c6b3; margin:0 20px; border-radius:12px; }
+    .recall .reminder { position:absolute; top:618px; left:78px; width:920px; font-size:42px; line-height:1.27; }
+    .recall .mission { position:absolute; top:812px; left:78px; width:920px; padding:44px 47px; border-radius:37px; background:#fff7e7; color:#183d3d; box-shadow:17px 18px 0 #0d3b39; }
+    .recall .mission .small { font-size:27px; letter-spacing:.11em; font-weight:850; color:#9c5b4e; }
+    .recall .mission strong { display:block; font-size:50px; line-height:1.1; margin-top:18px; }
+    .recall .mission p { font-size:38px; line-height:1.24; margin-top:23px; }
+    .recall .mission .link { font-size:35px; font-weight:800; color:#155c59; margin-top:24px; }
+    .recall .credit, .recall .number { color:#fff9e9; }
+  </style>
+</head>
+<body>
+  <section class="card scene" aria-label="Card 1. At a Korean café, politely ask for a drink to go.">
+    <div class="top"><div class="eyebrow">One café line · Korean</div><h1>The barista asks:<br>“For here?”</h1><div class="korean">포장해 주세요.</div><div class="meaning">“To go, please.”</div><div class="scene-pill">A polite takeaway answer</div></div>
+    <div class="number">01 / 06</div><div class="credit">Studio mindulmin</div>
+  </section>
+  <section class="card meaning-card" aria-label="Card 2. 포장해 주세요 means to go, please.">
+    <div class="left"><div class="eyebrow">The meaning</div><h2>Take it<br>with you.</h2><div class="korean">포장해 주세요.</div><div class="translation">To go, please.</div><p class="sentence">Use this when you want the drink packed to take away.</p></div>
+    <div class="arrow"></div><div class="bag"></div><div class="cup"></div><div class="number">02 / 06</div><div class="credit">Studio mindulmin</div>
+  </section>
+  <section class="card dialogue" aria-label="Card 3. Café dialogue: staff asks if you will have it here, you ask for takeaway.">
+    <div class="eyebrow">Say it in a real exchange</div><h2>One question.<br>One useful answer.</h2><div class="counter"></div>
+    <div class="staff">STAFF<span class="korean">매장에서 드시나요?</span><span class="en">“Will you have it here?”</span></div>
+    <div class="you">YOU<span class="korean">포장해 주세요.</span><span class="en">“To go, please.”</span></div>
+    <div class="cup-mark"></div><div class="number">03 / 06</div><div class="credit">Studio mindulmin</div>
+  </section>
+  <section class="card usage" aria-label="Card 4. Use the line when you want a takeaway drink at a café.">
+    <div class="eyebrow">When to use it</div><h2>Not staying?<br>Choose takeaway.</h2><p class="question">The drink is ordered. Now the staff asks whether you’re staying.</p>
+    <div class="path"><div class="counter-icon"></div><div class="step-arrow">→</div><div class="bag-icon"></div></div>
+    <div class="answer">If you want it to go, answer:<br><span class="korean">포장해 주세요.</span></div>
+    <div class="number">04 / 06</div><div class="credit">Studio mindulmin</div>
+  </section>
+  <section class="card practice" aria-label="Card 5. Recall prompt: you ordered a latte and are asked whether it is for here. Say your takeaway answer aloud.">
+    <div class="eyebrow">Your turn</div><h2>Say the answer<br>out loud.</h2>
+    <div class="order-ticket"><strong>YOUR ORDER</strong><div class="line"></div><span>1 latte</span></div>
+    <div class="staff-prompt">“For here?”<br><span style="font-size:40px;font-weight:500">The barista is waiting.</span></div>
+    <div class="blank"><span class="mic">◉</span><span>Your Korean line: ______</span></div><div class="cue">No peeking. Keep it short and polite.</div>
+    <div class="number">05 / 06</div><div class="credit">Studio mindulmin</div>
+  </section>
+  <section class="card recall" aria-label="Card 6. Recall after three minutes, then try the free Korean café mission at Language Cafe; link in caption.">
+    <div class="eyebrow">Make it stick</div><h2>Again in<br>3 minutes.</h2>
+    <div class="timeline"><div class="dot">1</div><div class="connector"></div><div class="dot">3m</div><div class="connector"></div><div class="dot">↗</div></div>
+    <p class="reminder">Put the cards away. When the timer ends, say your takeaway answer once more.</p>
+    <div class="mission"><div class="small">NEXT CAFÉ TURN</div><strong>Try the free Korean café mission.</strong><p>Order a drink, then answer the next question. Log in to start; no card required.</p><div class="link">Direct link in the caption →</div></div>
+    <div class="number">06 / 06</div><div class="credit">Studio mindulmin</div>
+  </section>
+</body>
+</html>

@@ -7,19 +7,22 @@ const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 const {
-  contentSha256, createThreadsApi, exactReadback, publishJob, runCli, validateJob
+  __testOnly, contentSha256, createThreadsApi, exactReadback, publishJob: publicPublishJob,
+  runCli: publicRunCli, validateJob
 } = require("./publish-threads-carousel.cjs");
+assert.ok(__testOnly, "Synthetic publisher tests require the Node test runner.");
+const { publishJob, runCli } = __testOnly;
 
 const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
 const HASH = crypto.createHash("sha256").update(JPEG).digest("hex");
 const DEPLOYMENT = "1234abcd.language-cafe-instagram-assets.pages.dev";
-const SITE = "https://languagestudio.uk/?utm_source=threads&utm_medium=organic&utm_campaign=language_cafe&utm_content=expression-050";
+const SITE = "https://languagestudio.uk/missions/korean-cafe/?utm_source=threads&utm_medium=organic&utm_campaign=language_cafe&utm_content=expression-050";
 
 function job(overrides = {}) {
   const content = overrides.content || {
     koreanExpression: "재미있어요",
     englishExplanation: "It is fun.",
-    text: `At a board-game café, say 재미있어요. It is fun. Swipe through the scene, meaning, and a quick recall card.\nFor separate English conversation practice, visit Language Cafe → ${SITE}`,
+    text: `At a board-game café, say 재미있어요. It is fun. Swipe through the scene, meaning, and a quick recall card.\nTry the free Korean café-ordering pilot at Language Cafe → ${SITE}`,
     siteUrl: SITE,
     images: [1, 2].map((n) => ({ url: `https://${DEPLOYMENT}/expression-050-abcd1234/card-0${n}.jpg`, sha256: HASH,
       altText: `Reviewed learner card ${n}: Korean expression and English meaning.` }))
@@ -37,7 +40,8 @@ function job(overrides = {}) {
       koreanExpressionAccuracy: { status: "passed", evidence: "Checked the polite Korean expression 재미있어요 in the board-game scene." },
       englishExplanation: { status: "passed", evidence: "The English line It is fun. matches the learner-facing Korean meaning." },
       mobileLegibility: { status: "passed", evidence: "Both cards were checked at phone width with readable Korean and English text.", checkedImageCount: content.images.length },
-      siteOfferAccuracy: { status: "passed", evidence: "The final link presents a separate English conversation service and does not claim Korean practice there." }
+      siteOfferAccuracy: { status: "passed", evidence: "The final link invites the free Korean café-ordering pilot without promising practice of this exact card expression.",
+        url: "https://languagestudio.uk/missions/korean-cafe/", checkedAt: new Date().toISOString() }
     },
     ...overrides
   };
@@ -93,12 +97,51 @@ function deps(f, api, other = {}) {
     session: session(), imageFetch: async () => response(), sleep: async () => {}, ...other };
 }
 
+test("public CLI and exported publishJob stay blocked in local and cloud modes with zero social writes", async (t) => {
+  const f = await fixture(t);
+  const previous = process.env.LANGUAGE_CAFE_CLOUD;
+  try {
+    for (const cloudMode of ["0", "1"]) {
+      process.env.LANGUAGE_CAFE_CLOUD = cloudMode;
+      const api = fakeApi();
+      let imageFetches = 0;
+      const dependencies = deps(f, api, { imageFetch: async () => { imageFetches += 1; return response(); } });
+      await assert.rejects(() => publicRunCli(["--job", f.jobPath, "--publish"], dependencies), /live publishing is disabled/);
+      await assert.rejects(() => publicPublishJob(f.jobPath, dependencies), /live publishing is disabled/);
+      assert.equal(imageFetches, 0);
+      assert.equal(api.state.identityCalls, 0);
+      assert.equal(api.state.imageCalls.length, 0);
+      assert.equal(api.state.carouselCalls.length, 0);
+      assert.equal(api.state.publishCalls, 0);
+      await assert.rejects(() => fs.stat(f.lockDirectory), { code: "ENOENT" });
+    }
+  } finally {
+    if (previous === undefined) delete process.env.LANGUAGE_CAFE_CLOUD;
+    else process.env.LANGUAGE_CAFE_CLOUD = previous;
+  }
+});
+
+test("exported publishJob cannot accept an arbitrary job path", async (t) => {
+  const f = await fixture(t);
+  await assert.rejects(() => publicPublishJob(path.join(f.root, "outside.json"), deps(f, fakeApi())), /inside content-queue\/threads\/jobs/);
+});
+
+test("synthetic test seam rejects non-test credentials before network or a lock", async (t) => {
+  const f = await fixture(t);
+  const api = fakeApi();
+  await assert.rejects(() => publishJob(f.jobPath, deps(f, api, { session: { ...session(), accessToken: "not-the-synthetic-token" } })), /limited to synthetic tests/);
+  assert.equal(api.state.identityCalls, 0);
+  assert.equal(api.state.imageCalls.length, 0);
+  await assert.rejects(() => fs.stat(f.lockDirectory), { code: "ENOENT" });
+});
+
 test("new strategy validation requires one final site link and immutable hashed images", () => {
   const valid = job();
   assert.equal(validateJob(valid).images.length, 2);
   assert.throws(() => validateJob({ ...valid, strategyVersion: "instagram-study-companion-link-v2" }), /channel-split-v3/);
   assert.throws(() => validateJob(job({ content: { ...valid.content, text: `${valid.content.text}\nhttps://example.org/` } })), /exactly one URL|end with/);
-  assert.throws(() => validateJob(job({ content: { ...valid.content, siteUrl: "https://evil.example/?utm_source=threads" } })), /languagestudio/);
+  assert.throws(() => validateJob(job({ content: { ...valid.content, siteUrl: "https://evil.example/?utm_source=threads" } })), /Korean mission URL/);
+  assert.throws(() => validateJob(job({ content: { ...valid.content, siteUrl: "https://languagestudio.uk/" } })), /Korean mission URL/);
   assert.throws(() => validateJob(job({ content: { ...valid.content, images: valid.content.images.map((x) => ({ ...x, url: x.url.replace("1234abcd.", "") })) } })), /immutable/);
   assert.throws(() => validateJob(job({ content: { ...valid.content, images: valid.content.images.map((x) => ({ ...x, sha256: "a" })) } })), /SHA-256/);
   assert.throws(() => validateJob(job({ content: { ...valid.content, images: [valid.content.images[0]] } })), /2 to 8/);
@@ -115,6 +158,7 @@ test("editorial approval binds the exact Korean-expression lesson, English expla
     images: [{ ...valid.content.images[0], sha256: "a".repeat(64) }, valid.content.images[1]] } }), /content SHA-256/);
   assert.throws(() => validateJob({ ...valid, review: { ...valid.review, koreanExpressionAccuracy: { status: "pending", evidence: "This is not an approved expression review." } } }), /koreanExpressionAccuracy/);
   assert.throws(() => validateJob({ ...valid, review: { ...valid.review, siteOfferAccuracy: { status: "pending", evidence: "The destination claim has not been checked against the current homepage." } } }), /siteOfferAccuracy/);
+  assert.throws(() => validateJob({ ...valid, review: { ...valid.review, siteOfferAccuracy: { ...valid.review.siteOfferAccuracy, checkedAt: "2026-01-01T00:00:00.000Z" } } }), /fresh matching landing-page/);
   assert.throws(() => validateJob({ ...valid, review: { ...valid.review, mobileLegibility: { ...valid.review.mobileLegibility, checkedImageCount: 1 } } }), /every approved carousel image/);
   assert.throws(() => validateJob(job({ content: { ...valid.content, koreanExpression: "English only" } })), /Korean expression/);
   assert.throws(() => validateJob(job({ content: { ...valid.content, englishExplanation: "Korean only" } })), /English explanation/);

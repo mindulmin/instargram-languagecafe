@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350" role="img" aria-labelledby="title desc">
+  <title id="title">Language Cafe free Korean café mission promotion</title>
+  <desc id="desc">A two-turn Korean café-order conversation, with an English barista question and a Korean learner response, invites Hangul-reading beginners to a free mission.</desc>
+  <defs>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="18"/>
+      <feOffset dy="16"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.16"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="tinyShadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dy="8"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.11"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="cupFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFDF6"/>
+      <stop offset="1" stop-color="#E3D7BF"/>
+    </linearGradient>
+    <linearGradient id="mintGlow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#D9F2DF"/>
+      <stop offset="1" stop-color="#BCE5D1"/>
+    </linearGradient>
+    <pattern id="grain" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="3" r="0.9" fill="#55735D" opacity="0.10"/>
+      <circle cx="11" cy="12" r="0.7" fill="#55735D" opacity="0.08"/>
+    </pattern>
+  </defs>
+
+  <rect width="1080" height="1350" fill="#F8F6EE"/>
+  <rect width="1080" height="1350" fill="url(#grain)"/>
+  <path d="M 0,0 H 1080 V 280 C 880,332 770,291 625,250 C 405,188 230,284 0,227 Z" fill="#D7ECDD"/>
+  <path d="M 0,0 H 1080 V 265 C 884,317 768,281 625,242 C 405,181 223,274 0,216 Z" fill="url(#mintGlow)" opacity="0.75"/>
+  <path d="M 792,0 C 764,154 911,219 1080,181" fill="none" stroke="#9BCDB2" stroke-width="2" opacity="0.6"/>
+
+  <g font-family="Arial, Helvetica, sans-serif" fill="#213E36">
+    <text x="72" y="93" font-size="31" font-weight="800" letter-spacing="-1.1">language cafe</text>
+    <text x="1007" y="92" font-size="20" font-weight="700" text-anchor="end" letter-spacing="2">STUDIO MINDULMIN</text>
+  </g>
+  <path d="M 72,113 H 1008" stroke="#223F35" stroke-opacity="0.25" stroke-width="2"/>
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="#315B4C">
+    <text x="75" y="170" font-size="22" letter-spacing="2.7">FREE KOREAN CAFÉ MISSION</text>
+  </g>
+
+  <g font-family="Georgia, 'Times New Roman', serif" fill="#1F302B" font-weight="700">
+    <text x="72" y="300" font-size="80" letter-spacing="-2.8">Your Korean café</text>
+    <text x="72" y="390" font-size="80" letter-spacing="-2.8">order is only</text>
+    <text x="72" y="480" font-size="80" letter-spacing="-2.8" font-style="italic" fill="#C95542">the first turn.</text>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#3E524A">
+    <text x="75" y="533" font-size="27">A free, English-guided practice for beginners</text>
+    <text x="75" y="569" font-size="27">who can read Hangul.</text>
+  </g>
+
+  <!-- An original café-table scene; not an application screenshot or mascot. -->
+  <ellipse cx="744" cy="978" rx="323" ry="45" fill="#759B7F" opacity="0.15"/>
+  <path d="M 474,672 C 649,631 934,624 1055,706 V 1091 H 405 C 401,914 412,756 474,672 Z" fill="#D5E8D4"/>
+  <path d="M 507,733 C 705,687 889,688 1055,751" fill="none" stroke="#A9D0B6" stroke-width="3" opacity="0.75"/>
+  <path d="M 462,848 C 616,818 947,819 1080,879" fill="none" stroke="#A9D0B6" stroke-width="3" opacity="0.6"/>
+
+  <g filter="url(#softShadow)">
+    <ellipse cx="808" cy="920" rx="171" ry="37" fill="#809F8A" opacity="0.25"/>
+    <path d="M 693,759 H 916 L 896,953 Q 888,975 863,977 H 750 Q 726,974 720,953 Z" fill="url(#cupFill)" stroke="#D2BFA6" stroke-width="4"/>
+    <ellipse cx="805" cy="757" rx="118" ry="28" fill="#FCF8EE" stroke="#D6C4A8" stroke-width="5"/>
+    <ellipse cx="805" cy="753" rx="93" ry="15" fill="#87624B"/>
+    <path d="M 695,812 H 916 L 905,860 H 703 Z" fill="#D07557"/>
+    <path d="M 735,836 H 878" stroke="#F4D9B8" stroke-width="3" opacity="0.7"/>
+    <path d="M 758,686 C 735,653 766,640 756,606 M 817,678 C 801,650 836,634 824,599" fill="none" stroke="#C6A994" stroke-linecap="round" stroke-width="6" opacity="0.55"/>
+  </g>
+
+  <g filter="url(#tinyShadow)">
+    <rect x="72" y="634" width="545" height="204" rx="33" fill="#FFFDF8"/>
+    <path d="M 567,835 L 608,835 L 575,865 Z" fill="#FFFDF8"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="107" y="685" font-size="21" font-weight="800" letter-spacing="2.5" fill="#C15D49">BARISTA</text>
+    <text x="107" y="751" font-size="44" font-weight="700" fill="#22332C">For here</text>
+    <text x="107" y="803" font-size="44" font-weight="700" fill="#22332C">or to go?</text>
+  </g>
+
+  <g filter="url(#tinyShadow)">
+    <rect x="236" y="877" width="476" height="182" rx="34" fill="#22473C"/>
+    <path d="M 290,875 L 331,875 L 301,849 Z" fill="#22473C"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="278" y="929" font-size="21" font-weight="800" letter-spacing="2.5" fill="#C1E6D1">YOU</text>
+  </g>
+  <text x="275" y="1008" font-family="'Malgun Gothic', 'Noto Sans CJK KR', Arial, sans-serif" font-size="54" font-weight="700" fill="#FFFDF5">포장해 주세요.</text>
+
+  <path d="M 71,1098 H 1009" stroke="#B8C9B7" stroke-width="2"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#446053">
+    <text x="76" y="1143" font-size="23" font-weight="700" letter-spacing="0.2">TRY FIRST</text>
+    <text x="425" y="1143" font-size="23" font-weight="700" letter-spacing="0.2">GET HELP</text>
+    <text x="763" y="1143" font-size="23" font-weight="700" letter-spacing="0.2">TRY AGAIN</text>
+    <text x="318" y="1141" font-size="28" fill="#BE755A">→</text>
+    <text x="655" y="1141" font-size="28" fill="#BE755A">→</text>
+  </g>
+
+  <rect x="72" y="1185" width="936" height="111" rx="25" fill="#1F3B32"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#FFFDF6">
+    <text x="110" y="1231" font-size="28" font-weight="800" letter-spacing="0.1">Try the free Korean café mission</text>
+    <text x="110" y="1267" font-size="22" opacity="0.85">Language Cafe · link in bio · login required</text>
+    <text x="968" y="1256" font-size="43" text-anchor="end">↗</text>
+  </g>
+  <text x="73" y="1324" font-family="Arial, Helvetica, sans-serif" font-size="17" letter-spacing="1.6" fill="#62776D">ONE ORDER. ONE FOLLOW-UP. YOUR WORDS.</text>
+</svg>

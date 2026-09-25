@@ -2,7 +2,7 @@
 "use strict";
 
 // Standalone channel-split-v3 publisher. The legacy TEXT publisher is unchanged.
-// No external write is possible without an explicit --publish and an approved job.
+// Live v3 publishing is disabled until a trusted remote claim + intent runner is wired.
 const crypto = require("node:crypto");
 const fs = require("node:fs/promises");
 const path = require("node:path");
@@ -13,10 +13,12 @@ const LOCK_DIR = path.join(__dirname, ".carousel-publish-locks");
 const SESSION_PATH = "C:\\Users\\earth\\.codex\\threads\\session.json";
 const API_BASE = "https://graph.threads.net/v1.0";
 const STRATEGY = "channel-split-v3";
+const MISSION_URL = "https://languagestudio.uk/missions/korean-cafe/";
 const FIELDS = "id,text,media_type,permalink,timestamp,children";
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
 const MAX_PAGES = 20;
 const IMAGE_HOST = /^[a-f0-9]{8,}\.language-cafe-instagram-assets\.pages\.dev$/u;
+const TEST_AUTHORITY = process.env.NODE_TEST_CONTEXT ? Symbol("Threads v3 synthetic publisher test") : null;
 
 class ImageVerificationError extends Error {}
 
@@ -71,8 +73,9 @@ function siteUrl(value) {
   if (typeof value !== "string") throw new Error("content.siteUrl is required.");
   let url;
   try { url = new URL(value); } catch { throw new Error("content.siteUrl must be an HTTPS Language Cafe URL."); }
-  if (url.protocol !== "https:" || url.hostname !== "languagestudio.uk" || url.username || url.password || url.port || url.hash || url.href !== value) {
-    throw new Error("content.siteUrl must be a canonical HTTPS languagestudio.uk URL.");
+  if (url.protocol !== "https:" || url.hostname !== "languagestudio.uk" || url.pathname !== "/missions/korean-cafe/" ||
+      url.username || url.password || url.port || url.hash || url.href !== value) {
+    throw new Error("content.siteUrl must be the canonical HTTPS Language Cafe Korean mission URL.");
   }
   const entries = [...url.searchParams.entries()];
   if (entries.length) {
@@ -160,6 +163,11 @@ function validateJob(job) {
     if (gate?.status !== "passed" || typeof gate.evidence !== "string" || gate.evidence.trim().length < 20) {
       throw new Error(`Threads carousel requires passed ${name} review with concrete evidence.`);
     }
+  }
+  const checkedAt = Date.parse(String(review.siteOfferAccuracy.checkedAt || ""));
+  if (review.siteOfferAccuracy.url !== MISSION_URL || !Number.isFinite(checkedAt) || checkedAt > Date.now() ||
+      Date.now() - checkedAt > 24 * 60 * 60 * 1000) {
+    throw new Error("Threads Korean mission offer review must have a fresh matching landing-page check.");
   }
   if (review.mobileLegibility.checkedImageCount !== content.images.length) {
     throw new Error("Mobile legibility review must cover every approved carousel image.");
@@ -432,7 +440,13 @@ async function exactReadback(api, session, mediaId, text, expectedImages = [], c
     timestamp: post?.timestamp || null };
 }
 
-async function publishJob(jobPath, dependencies = {}) {
+async function publishJobCore(jobPath, dependencies = {}, authority) {
+  if (!TEST_AUTHORITY || authority !== TEST_AUTHORITY || !dependencies.api || !dependencies.session ||
+      dependencies.session.accessToken !== "never-print-this-token" || typeof dependencies.imageFetch !== "function" ||
+      dependencies.apiFetch) {
+    throw new Error("The Threads v3 publisher core is limited to synthetic tests.");
+  }
+  jobPath = resolveJobPath(jobPath, dependencies.jobsDirectory || JOBS_DIR);
   const io = dependencies.fs || fs;
   const first = await readJob(jobPath, io);
   const cloudPermit = await assertCloudV3Permit(first.job, sha256(first.bytes), dependencies.cloudPermitVerifier,
@@ -499,12 +513,29 @@ async function publishJob(jobPath, dependencies = {}) {
   }
 }
 
+async function publishJob(jobPath, dependencies = {}) {
+  // Validate even direct module calls against the canonical jobs directory.
+  resolveJobPath(jobPath, TEST_AUTHORITY ? dependencies.jobsDirectory || JOBS_DIR : JOBS_DIR);
+  throw new Error("Threads v3 live publishing is disabled: a trusted remote claim, durable API intents, and enabled policy are not integrated.");
+}
+
 async function runCli(args = process.argv.slice(2), dependencies = {}) {
   const options = parseArgs(args);
   const jobPath = resolveJobPath(options.job, dependencies.jobsDirectory || JOBS_DIR);
   const { job, data } = await readJob(jobPath, dependencies.fs || fs);
   if (!options.publish) return { status: "dry_run", jobId: data.id, imageCount: data.images.length, siteUrl: data.siteUrl, wouldCallThreadsApi: false };
   return publishJob(jobPath, dependencies);
+}
+
+async function testOnlyPublishJob(jobPath, dependencies = {}) {
+  return publishJobCore(jobPath, dependencies, TEST_AUTHORITY);
+}
+
+async function testOnlyRunCli(args, dependencies = {}) {
+  const options = parseArgs(args);
+  const jobPath = resolveJobPath(options.job, dependencies.jobsDirectory || JOBS_DIR);
+  if (!options.publish) return runCli(args, dependencies);
+  return testOnlyPublishJob(jobPath, dependencies);
 }
 
 async function main() {
@@ -515,3 +546,4 @@ if (require.main === module) void main();
 
 module.exports = { API_BASE, FIELDS, STRATEGY, acquireLock, assertCloudV3Permit, contentSha256, createThreadsApi, exactReadback, imageUrl,
   parseArgs, publishJob, resolveJobPath, runCli, sessionValues, siteUrl, validateJob, verifyImages, waitReady };
+if (TEST_AUTHORITY) module.exports.__testOnly = { publishJob: testOnlyPublishJob, runCli: testOnlyRunCli };
