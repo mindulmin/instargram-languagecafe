@@ -289,6 +289,21 @@ test("Instagram intent commits before each social write and exact official readb
   assert.equal(remote.ledger.channelSplitV3.receipts.length, 1);
 });
 
+test("scheduled Instagram run is a successful no-op after its only approved job is verified", async () => {
+  const f = await fixture("instagram"), remote = new FakeRemote();
+  const transport = igApi(f, remote);
+  const first = await runner.__testOnly.run({ channel: f.channel, jobId: f.id, publish: true },
+    deps(f, remote, transport));
+  assert.equal(first.status, "published_verified");
+  const previousCalls = [...remote.calls];
+  const later = { ...deps(f, remote, transport), clock: () => new Date(Date.parse(T) + 15 * 24 * 3600 * 1000) };
+  const next = await runner.__testOnly.run({ channel: f.channel, jobId: "auto", publish: true }, later);
+  assert.equal(next.status, "not_due");
+  assert.equal(next.reason, "all_approved_jobs_published");
+  assert.equal(next.wouldCallSocialApi, false);
+  assert.deepEqual(remote.calls, previousCalls);
+});
+
 test("official duplicate stops before claim; uncertain create retains one-attempt lock", async () => {
   const f = await fixture("instagram"), remote = new FakeRemote();
   await assert.rejects(runner.__testOnly.run({ channel: f.channel, jobId: f.id, publish: true },

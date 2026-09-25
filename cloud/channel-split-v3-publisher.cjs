@@ -408,7 +408,7 @@ async function runAuto(input, dependencies, authority) {
   const history = await readIdentityAndHistory({ channel, session, api, clock });
   const chosen = selection({ channel, jobs, policy, ledger: initial.ledger, history, clock });
   if (chosen.status !== "selected") {
-    if (["no_approved_job", "minimum_gap_not_met", "rolling_14d_cap", "channel_disabled"].includes(chosen.reason)) {
+    if (["no_approved_job", "all_approved_jobs_published", "minimum_gap_not_met", "rolling_14d_cap", "channel_disabled"].includes(chosen.reason)) {
       return { status: "not_due", reason: chosen.reason, channel, selectedJobId: null,
         nextEligibleAt: chosen.nextEligibleAt || null, wouldCallSocialApi: false };
     }

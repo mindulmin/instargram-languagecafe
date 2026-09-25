@@ -65,6 +65,23 @@ jobs:
               $failed = $true
               continue
             }
+            $jobDirectory = if ($channel -eq 'instagram') { 'instagram-promo' } else { 'threads' }
+            $jobFile = "content-queue/$jobDirectory/jobs/$jobId.json"
+            try {
+              $job = Get-Content -LiteralPath $jobFile -Raw | ConvertFrom-Json -ErrorAction Stop
+              if ($job.id -cne $jobId -or $job.channel -cne $channel) { throw 'Grant/job identity mismatch.' }
+              if ($job.workflow.status -notin @('draft', 'approved', 'published', 'rejected', 'cancelled', 'blocked', 'publishing', 'ambiguous')) {
+                throw 'Unknown job status.'
+              }
+              if ($job.workflow.status -ne 'approved') {
+                "${channel}/${jobId} preview skipped: job_$($job.workflow.status)" >> $env:GITHUB_STEP_SUMMARY
+                continue
+              }
+            } catch {
+              "${channel}/${jobId} preview failed: job unavailable or invalid." >> $env:GITHUB_STEP_SUMMARY
+              $failed = $true
+              continue
+            }
             $seen[$channel] += 1
             node cloud/channel-split-v3-publisher.cjs --mode preview --channel $channel --job-id $jobId
             "${channel}/${jobId} preview exit: $LASTEXITCODE" >> $env:GITHUB_STEP_SUMMARY
