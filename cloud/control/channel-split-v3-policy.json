@@ -9,10 +9,10 @@
       "minimumGapHours": 72
     },
     "threads": {
-      "enabled": false,
+      "enabled": true,
       "maxPosts": 3,
       "minimumGapHours": 72
     }
   },
-  "activation": "Instagram reviewed promotion enabled after refreshing the GitHub session. Threads remains paused because run 36141543126 retained an uncertain child-create intent at index 3; never retry that request before a separate official reconciliation."
+  "activation": "Instagram first promotion was published_verified in cloud run 36142919425. Threads first attempt 36141543126 was independently closed as abandoned_before_publish_intent after official readback; its original job remains blocked and must never be retried. A new separately reviewed three-card job is enabled for one controlled cloud publication."
 }
