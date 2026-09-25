@@ -209,19 +209,7 @@
     "strategyVersion": "channel-split-v3",
     "locks": {
       "instagram": null,
-      "threads": {
-        "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
-        "claimHash": "466ece62c21bbbada2b22cf0b39cea1f32b873685b40f24ff78923d8532b64cb",
-        "stage": "publish_attempted",
-        "createAttempts": 4,
-        "publishAttempts": 1,
-        "containerId": "17903994054569815",
-        "childContainerIds": [
-          "17903993157569815",
-          "17903993673569815",
-          "17903993976569815"
-        ]
-      }
+      "threads": null
     },
     "actions": [
       {
@@ -392,6 +380,41 @@
         "socialApiWriteCalls": 0,
         "originalAttemptRetryAuthorized": false,
         "closedAt": "2026-09-25T14:00:27.041Z"
+      },
+      {
+        "status": "published_verified",
+        "strategyVersion": "channel-split-v3",
+        "channel": "threads",
+        "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
+        "jobId": "threads-takeaway-20260925-02",
+        "claimHash": "466ece62c21bbbada2b22cf0b39cea1f32b873685b40f24ff78923d8532b64cb",
+        "grantSha256": "508e1ae7607b8288473308fe7084ed100597d175c51aef958c852b524984dbea",
+        "reviewer": "independent_editorial_controller_v1",
+        "remoteClaimCommitSha": "dfc3d357828905f0c5e4bd5da2319cfb2781947f",
+        "mediaId": "18226021297332298",
+        "permalink": "https://www.threads.com/@mindulmin/post/Ddtpt44EZNr",
+        "publishedAt": "2026-09-25T14:16:00+0000",
+        "mediaType": "CAROUSEL_ALBUM",
+        "sourceAssetSha256": [
+          "410ce3f294b63cb7d06ef6ffa697ff551157d7bc6f4ef755b9250a0d69596669",
+          "95ac188368e63ad9354c43d52a3f68eef2f06dced904c70822538982380eabb2",
+          "9c5d6ccf31df527f2b01581dc095a62ce8f97d9393cbb8dc46454b75f0f42b5c"
+        ],
+        "childContainerIds": [
+          "17903993157569815",
+          "17903993673569815",
+          "17903993976569815"
+        ],
+        "publishedChildMediaIds": [
+          "18132372196669468",
+          "18115317269069744",
+          "17904861000563211"
+        ],
+        "childOrderEvidence": "official_parent_children_order_and_reviewed_unique_alt_text",
+        "checkedAt": "2026-09-25T14:16:04.307Z",
+        "officialSource": "official_threads_graph_api_recent_media",
+        "officialReadbackSha256": "59df1fffe25e8e2d00ef77042e72299797ea9868ec6b6eb9affa360dc0684387",
+        "verifiedAt": "2026-09-25T14:16:04.967Z"
       }
     ],
     "audit": [
@@ -683,6 +706,18 @@
         "containerId": "17903994054569815",
         "stateHash": "d806b2b5b52efe80200057b1d5a22abba83d317e3de9d779fe1cf251b9b3b6e3",
         "hash": "2a7a59f0fa83ed8e313ad73378929fb4d86e008eb4f8679a0ddd1fd5f0670bcf"
+      },
+      {
+        "sequence": 25,
+        "previousHash": "2a7a59f0fa83ed8e313ad73378929fb4d86e008eb4f8679a0ddd1fd5f0670bcf",
+        "at": "2026-09-25T14:16:04.967Z",
+        "kind": "published_verified",
+        "channel": "threads",
+        "actionId": "v3:threads:threads-takeaway-20260925-02:36145951320",
+        "mediaId": "18226021297332298",
+        "readbackSha256": "59df1fffe25e8e2d00ef77042e72299797ea9868ec6b6eb9affa360dc0684387",
+        "stateHash": "8e3c55c9e25922b8824e56a4f2e273df8000e188968a644d9834b6b0bba05cfb",
+        "hash": "9cc1c1ea1b15a26c4e14506b0158f9c22575340976b0377f28fd6d79bb2e78f2"
       }
     ]
   }
