@@ -1,5 +1,7 @@
 # Language Cafe 카드뉴스 자동화
 
+2026-09-25 이후의 새 게시물은 [채널 분리 v3 규칙](content-queue/CHANNEL-SPLIT-v3.md)을 따른다. 아래 Instagram 한국어 수업 → Threads 텍스트 복습 절차는 과거 v2 작업의 검증·복구용이다. v2 정책은 새 발행을 허용하지 않는다. v3 예약 발행은 별도 검증 후 활성화한다.
+
 ## 흐름
 
 1. `jobs/new-carousel.template.json`을 복제해 새 작업 파일을 만든다.

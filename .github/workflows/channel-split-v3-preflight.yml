@@ -1,0 +1,33 @@
+name: Language Cafe channel split v3 preflight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.repository == 'mindulmin/instargram-languagecafe' && github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify independent channel publishers and controller
+        shell: pwsh
+        run: |
+          npm ci --ignore-scripts
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run test:channel-split
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Report activation state
+        shell: pwsh
+        run: |
+          $policy = Get-Content -LiteralPath 'cloud/control/channel-split-v3-policy.json' -Raw | ConvertFrom-Json
+          "## Channel split v3" >> $env:GITHUB_STEP_SUMMARY
+          "Code preflight passed. Publishing enabled: **$($policy.enabled)**." >> $env:GITHUB_STEP_SUMMARY
+          "This workflow has made no social API calls or posts." >> $env:GITHUB_STEP_SUMMARY

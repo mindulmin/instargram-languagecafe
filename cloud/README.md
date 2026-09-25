@@ -1,5 +1,7 @@
 # Cloud operations
 
+2026-09-25: New posts follow [channel-split-v3](../content-queue/CHANNEL-SPLIT-v3.md). The v2 learning-pair release policy is disabled. The procedures below describe historical v2 operation and recovery; they do not activate the independent v3 publishers. The v3 policy is also disabled until its durable cloud execution and official readbacks are verified.
+
 ## Execution and authority
 
 `main` contains reviewed source and `cloud/control/current-test.json`. The daily schedule is 00:00 UTC / 09:00 Asia/Seoul. GitHub can delay a scheduled run; an expired release must still stop. Manual runs default to **preflight**, which never injects platform sessions, calls social APIs, invokes the AI agent, or claims a publish action.

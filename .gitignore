@@ -14,6 +14,10 @@
 !/content-queue/*.md
 !/content-queue/*.cjs
 !/content-queue/*gate.json
+!/content-queue/instagram-promo/
+/content-queue/instagram-promo/*
+!/content-queue/instagram-promo/*.cjs
+!/content-queue/instagram-promo/*.md
 !/content-queue/threads/
 /content-queue/threads/*
 !/content-queue/threads/*.cjs

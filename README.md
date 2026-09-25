@@ -1,4 +1,8 @@
-# Language Cafe Instagram publisher
+# Language Cafe Instagram and Threads publisher
+
+2026-09-25 운영 전환: 새 게시물은 [채널 분리 규칙](content-queue/CHANNEL-SPLIT-v3.md)을 따릅니다. Instagram은 Language Cafe 영어 대화 서비스를 소개하고, Threads는 기존 인스타그램처럼 한국어 표현을 영어로 설명하는 카드뉴스와 사이트 링크를 제공합니다. 사이트는 영어 대화 서비스이므로 Threads 카드의 한국어 학습 내용과 일치한다고 소개하지 않습니다. 기존 v2 학습 짝 자동 발행은 `cloud/control/policy.json`에서 비활성화됐습니다. 새 v3 발행기는 별도 검증 중이며, v3 예약 발행은 아직 활성화되지 않았습니다.
+
+## 이전 v2 운영 기록
 
 한국어 표현 8장 캐러셀과 같은 표현의 Threads 복습 글을 운영하는 독립 저장소입니다.
 

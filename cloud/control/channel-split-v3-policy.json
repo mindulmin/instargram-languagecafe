@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "strategyVersion": "channel-split-v3",
+  "enabled": false,
+  "channels": {
+    "instagram": {
+      "maxPosts": 3,
+      "minimumGapHours": 72
+    },
+    "threads": {
+      "maxPosts": 3,
+      "minimumGapHours": 72
+    }
+  },
+  "activation": "Enable only after independent channel jobs, durable cloud claim/checkpoint, credentials, media hosting, and one controlled official readback per channel are verified."
+}
