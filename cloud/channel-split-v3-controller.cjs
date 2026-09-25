@@ -157,6 +157,7 @@ function decide({ policy, jobs, ledger, instagramHistory, threadsHistory, now })
       output.channels[channel] = blocked('channel_policy_invalid');
       continue;
     }
+    if (settings.enabled === false) { output.channels[channel] = blocked('channel_disabled'); continue; }
     if (jobErrors[channel]) { output.channels[channel] = blocked(jobErrors[channel]); continue; }
     if (ledger.locks[channel] !== null) { output.channels[channel] = blocked('unresolved_channel_lock'); continue; }
     if (unresolvedAction(ledger, channel) || grouped[channel].some(job => UNRESOLVED.has(job.workflow.status))) {

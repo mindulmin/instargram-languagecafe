@@ -184,6 +184,19 @@ test("auto preview needs no API and disabled auto publish is a non-posting no-op
   assert.equal(blocked.wouldCallSocialApi, false);
 });
 
+test("auto publish treats a paused channel as a successful non-posting skip", async () => {
+  const f = await fixture("threads"), remote = new FakeRemote();
+  f.policy.channels.threads.enabled = false;
+  f.files.set(require("node:path").join(__dirname, "control", "channel-split-v3-policy.json"),
+    Buffer.from(JSON.stringify(f.policy)));
+  const result = await runner.__testOnly.run({ channel: "threads", jobId: "auto", publish: true },
+    deps(f, remote, threadsApi(f, remote)));
+  assert.equal(result.status, "not_due");
+  assert.equal(result.reason, "channel_disabled");
+  assert.equal(result.wouldCallSocialApi, false);
+  assert.equal(remote.calls.length, 0);
+});
+
 test("offer check requires an actual homepage anchor, not just matching page words", async () => {
   const f = await fixture("instagram");
   const withoutAnchor = async value => {

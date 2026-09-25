@@ -35,6 +35,16 @@ test('disabled policy blocks both channels without selecting or authorizing publ
   assert.equal(decision.channels.threads.reason, 'policy_disabled');
 });
 
+test('one paused channel does not disable the other reviewed channel', () => {
+  const input = fixture();
+  input.policy.channels.instagram.enabled = true;
+  input.policy.channels.threads.enabled = false;
+  input.ledger.locks.threads = { actionId: 'unresolved-threads-intent' };
+  const decision = decide(input);
+  assert.equal(decision.channels.instagram.status, 'selected');
+  assert.equal(decision.channels.threads.reason, 'channel_disabled');
+});
+
 test('complete empty official histories allow independent approved-job selection without mutation', () => {
   const input = fixture(), before = structuredClone(input);
   const decision = decide(input);

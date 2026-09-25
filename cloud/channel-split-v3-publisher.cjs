@@ -388,6 +388,8 @@ async function runAuto(input, dependencies, authority) {
   const policy = await readPolicy(io);
   if (publish && !policy.enabled) return { status: "blocked_policy_disabled", channel, selectedJobId: null,
     wouldCallSocialApi: false };
+  if (publish && policy.channels?.[channel]?.enabled === false) return { status: "not_due",
+    reason: "channel_disabled", channel, selectedJobId: null, wouldCallSocialApi: false };
   const jobs = await readQueue(channel, io);
   const approved = jobs.filter(job => job.workflow?.status === "approved");
   if (!publish) {
@@ -406,7 +408,7 @@ async function runAuto(input, dependencies, authority) {
   const history = await readIdentityAndHistory({ channel, session, api, clock });
   const chosen = selection({ channel, jobs, policy, ledger: initial.ledger, history, clock });
   if (chosen.status !== "selected") {
-    if (["no_approved_job", "minimum_gap_not_met", "rolling_14d_cap"].includes(chosen.reason)) {
+    if (["no_approved_job", "minimum_gap_not_met", "rolling_14d_cap", "channel_disabled"].includes(chosen.reason)) {
       return { status: "not_due", reason: chosen.reason, channel, selectedJobId: null,
         nextEligibleAt: chosen.nextEligibleAt || null, wouldCallSocialApi: false };
     }
