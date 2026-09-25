@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "enabled": true,
+  "enabled": false,
   "startsOn": "2026-09-04",
   "maxPosts": 3,
   "minimumGapHours": 72,
   "releaseHours": 3,
   "storiesEnabled": true,
   "storyLimitPerPair": 1,
-  "authorization": "Owner requested cloud content selection, review, publication and Story distribution on 2026-09-11. No engagement bots, profile changes, ads or new Reels."
+  "authorization": "Historical Instagram lesson + Threads text-pair strategy retired for new releases on 2026-09-25. Preserve existing state and receipts while channel-split-v3 is prepared. No engagement bots, profile changes, ads or new Reels."
 }

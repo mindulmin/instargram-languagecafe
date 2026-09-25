@@ -9,7 +9,7 @@ function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lc-controller-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const now = new Date('2026-09-11T01:00:00Z');
-  return { root, now, template: require('./control/current-test.json'), policy: { ...require('./control/policy.json') },
+  return { root, now, template: require('./control/current-test.json'), policy: { ...require('./control/policy.json'), enabled: true },
     ledger: { version: 1, actions: [], lock: null }, history: { source: 'official_instagram_graph_api_recent_media', complete: true, checkedAt: now.toISOString(), media: [] },
     rows: [{ id: '999', koreanExpression: '천천히 말해 주세요', primaryFormat: 'card_carousel', status: 'ready' }] };
 }
@@ -30,6 +30,12 @@ test('controller rejects disabled policy, missing history, future or stale readb
     { history: { ...f.history, checkedAt: '2026-09-12T01:00:00Z' } }, { ledger: { ...f.ledger, lock: { runId: 'old' } } }]) {
     const d = decide({ ...f, ...changed }); assert.equal(d.selected, null); assert.equal(d.control.publishing.postDue, false);
   }
+});
+test('production policy keeps the retired learning-pair release disabled', t => {
+  const f = fixture(t);
+  const policy = require('./control/policy.json');
+  assert.equal(policy.enabled, false);
+  assert.equal(decide({ ...f, policy }).status, 'controller_policy_invalid_or_disabled');
 });
 test('controller rejects historic captions including target used only as contrast and all old attempts', t => {
   const f = fixture(t);
