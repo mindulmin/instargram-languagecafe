@@ -209,20 +209,7 @@
     "strategyVersion": "channel-split-v3",
     "locks": {
       "instagram": null,
-      "threads": {
-        "actionId": "v3:threads:threads-takeaway-20260925-01:36141543126",
-        "claimHash": "4036a747a1537c74f0069ee01124788918d8e14f0bbdc476906892126c90e140",
-        "stage": "child_create_attempted",
-        "createAttempts": 4,
-        "publishAttempts": 0,
-        "containerId": null,
-        "childContainerIds": [
-          "17903987298569815",
-          "17903987412569815",
-          "17903987466569815"
-        ],
-        "pendingChildIndex": 3
-      }
+      "threads": null
     },
     "actions": [
       {
@@ -328,6 +315,33 @@
         "officialSource": "official_instagram_graph_api_recent_media",
         "officialReadbackSha256": "c3f18eead394ab6161753fcbdeeb6b201e21b32ee33363c0b6b1d43a77df1390",
         "verifiedAt": "2026-09-25T13:46:27.892Z"
+      },
+      {
+        "status": "abandoned_before_publish_intent",
+        "strategyVersion": "channel-split-v3",
+        "channel": "threads",
+        "actionId": "v3:threads:threads-takeaway-20260925-01:36141543126",
+        "jobId": "threads-takeaway-20260925-01",
+        "claimHash": "4036a747a1537c74f0069ee01124788918d8e14f0bbdc476906892126c90e140",
+        "grantSha256": "e684edddd6c8205fd06b7d3446578b617a736e6d0c6b9aa3ff7d1514ff08a16c",
+        "reviewer": "independent_editorial_controller_v1",
+        "runId": "36141543126",
+        "runHeadSha": "9a8a63e7f48c66dd1d3913d80091a8760a4de973",
+        "retiredMainSha": "6f098f977f1f705622efb6b0de2e8489778169ed",
+        "pendingChildIndex": 3,
+        "createAttempts": 4,
+        "publishAttempts": 0,
+        "knownChildContainerIds": [
+          "17903987298569815",
+          "17903987412569815",
+          "17903987466569815"
+        ],
+        "officialHistorySha256": "6597f9b26b7324299352519bcabccad79d506e7a9a8ec9e9c84939c7f35fccd5",
+        "knownChildrenSha256": "f58082ee3868a79cdab216bdb019e0e1001a1a6313c34ec8c89d97ac8c34a2f3",
+        "unknownFourthChildMayExist": true,
+        "socialApiWriteCalls": 0,
+        "originalAttemptRetryAuthorized": false,
+        "closedAt": "2026-09-25T14:00:27.041Z"
       }
     ],
     "audit": [
@@ -480,6 +494,20 @@
         "readbackSha256": "c3f18eead394ab6161753fcbdeeb6b201e21b32ee33363c0b6b1d43a77df1390",
         "stateHash": "57c794b54c90abc658d095eef52d39f90212352adf71b8bf53699c0a095ed129",
         "hash": "268e893b20dd6d90c4d31dc19039c43a44d6d491e85a8e3aec278528027fe857"
+      },
+      {
+        "sequence": 14,
+        "previousHash": "268e893b20dd6d90c4d31dc19039c43a44d6d491e85a8e3aec278528027fe857",
+        "at": "2026-09-25T14:00:27.041Z",
+        "kind": "abandoned_before_publish_intent",
+        "channel": "threads",
+        "actionId": "v3:threads:threads-takeaway-20260925-01:36141543126",
+        "claimHash": "4036a747a1537c74f0069ee01124788918d8e14f0bbdc476906892126c90e140",
+        "officialHistorySha256": "6597f9b26b7324299352519bcabccad79d506e7a9a8ec9e9c84939c7f35fccd5",
+        "knownChildrenSha256": "f58082ee3868a79cdab216bdb019e0e1001a1a6313c34ec8c89d97ac8c34a2f3",
+        "retiredMainSha": "6f098f977f1f705622efb6b0de2e8489778169ed",
+        "stateHash": "c92ce0eb50f40c50c8c627e24d2a76ace67107d9518cd6c1f36783b291777fa5",
+        "hash": "70bc82339d168c719fc09f5041a3c74e2675083e193f9e3dee514861306ed5a8"
       }
     ]
   }
