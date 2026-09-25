@@ -4,8 +4,8 @@
   "channel": "threads",
   "strategyVersion": "channel-split-v3",
   "workflow": {
-    "status": "approved",
-    "autoPublish": true
+    "status": "blocked",
+    "autoPublish": false
   },
   "source": {
     "campaign": "content-queue/threads/campaign-2026-09-25-01",

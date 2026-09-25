@@ -16,6 +16,20 @@ const REVIEWER = "independent_editorial_controller_v1";
 const MAX_PERMIT_MS = 30 * 60 * 1000;
 const READBACK_MAX_AGE_MS = 5 * 60 * 1000;
 const CLOCK_SKEW_MS = 30 * 1000;
+const THREADS_RECOVERY = Object.freeze({
+  actionId: "v3:threads:threads-takeaway-20260925-01:36141543126",
+  claimHash: "4036a747a1537c74f0069ee01124788918d8e14f0bbdc476906892126c90e140",
+  jobId: "threads-takeaway-20260925-01",
+  jobSha256: "16a0165aeec5d4b3a4de81e6cd538bb84e37169397412f72170464fa275fcd0d",
+  grantSha256: "e684edddd6c8205fd06b7d3446578b617a736e6d0c6b9aa3ff7d1514ff08a16c",
+  copySha256: "63f1da7ac2d128eafa7767bd6a44a39fe2ca5d06485d47eb17b0a4c62bde0201",
+  originStateSha: "592ae2b8ff664249d981f5c3435e516db609a403",
+  runId: "36141543126",
+  runHeadSha: "9a8a63e7f48c66dd1d3913d80091a8760a4de973",
+  accountId: "26852882424410102",
+  targetExpression: "포장해 주세요.",
+  childContainerIds: ["17903987298569815", "17903987412569815", "17903987466569815"]
+});
 
 function fail(code) { throw new Error(`v3_state_${code}`); }
 function isRecord(value) {
@@ -108,7 +122,8 @@ function validateV3(v3) {
     || !isRecord(v3.locks) || !CHANNELS.every(channel => Object.hasOwn(v3.locks, channel))
     || Object.keys(v3.locks).length !== 2 || !Array.isArray(v3.actions)
     || !Array.isArray(v3.receipts) || !Array.isArray(v3.audit)) fail("schema_invalid");
-  const actionIds = new Set(), jobIds = new Set(), mediaIds = { instagram: new Set(), threads: new Set() };
+  const actionIds = new Set(), jobIds = new Set(), receiptActionIds = new Set(),
+    mediaIds = { instagram: new Set(), threads: new Set() };
   for (const action of v3.actions) {
     if (!isRecord(action) || !ACTION_ID.test(action.actionId || "") || !CHANNELS.includes(action.channel)
       || action.schemaVersion !== 1 || action.strategyVersion !== STRATEGY
@@ -148,7 +163,22 @@ function validateV3(v3) {
     if (!isRecord(receipt) || !action || receipt.strategyVersion !== STRATEGY
       || receipt.channel !== action.channel || receipt.jobId !== action.jobId
       || receipt.grantSha256 !== action.grantSha256 || receipt.reviewer !== action.reviewer
-      || receipt.claimHash !== action.claimHash || receipt.status !== "published_verified"
+      || receipt.claimHash !== action.claimHash || receiptActionIds.has(receipt.actionId)) fail("receipt_invalid_or_duplicate");
+    receiptActionIds.add(receipt.actionId);
+    if (receipt.status === "abandoned_before_publish_intent") {
+      if (action.actionId !== THREADS_RECOVERY.actionId || receipt.channel !== "threads"
+        || receipt.runHeadSha !== THREADS_RECOVERY.runHeadSha
+        || receipt.runId !== THREADS_RECOVERY.runId
+        || !GIT_SHA.test(receipt.retiredMainSha || "")
+        || !HEX.test(receipt.officialHistorySha256 || "")
+        || !HEX.test(receipt.knownChildrenSha256 || "")
+        || receipt.pendingChildIndex !== 3 || receipt.createAttempts !== 4
+        || receipt.publishAttempts !== 0 || receipt.unknownFourthChildMayExist !== true
+        || receipt.socialApiWriteCalls !== 0 || receipt.originalAttemptRetryAuthorized !== false
+        || !Number.isFinite(dateMs(receipt.closedAt))) fail("abandoned_receipt_invalid");
+      continue;
+    }
+    if (receipt.status !== "published_verified"
       || !/^[0-9]+$/u.test(receipt.mediaId || "") || typeof receipt.permalink !== "string"
       || mediaIds[receipt.channel].has(receipt.mediaId)) fail("receipt_invalid_or_duplicate");
     mediaIds[receipt.channel].add(receipt.mediaId);
@@ -525,6 +555,117 @@ function completeVerified({ ledger, permit, expectedRemoteStateSha, observedRemo
   return { ledger: next, receipt: clone(receipt) };
 }
 
+// One-time recovery for the failed 2026-09-25 Threads attempt. This is a
+// terminal record for the original action, never a publication receipt or a
+// permit to retry its unknown fourth child. The caller must independently
+// obtain the official evidence and commit/read back this transition by CAS.
+function abandonThreads36141543126({ ledger, expectedRemoteStateSha, observedRemoteStateSha,
+  jobBytes, grantBytes, retiredJobBytes, retiredPolicyBytes, retiredMainSha,
+  failedRun, officialHistory, knownChildren, at }) {
+  const v3 = checkedLedger(ledger);
+  assertRemote(expectedRemoteStateSha, observedRemoteStateSha);
+  const pinned = THREADS_RECOVERY;
+  const action = v3.actions.find(item => item.actionId === pinned.actionId);
+  const lock = v3.locks.threads;
+  if (!action || action.claimHash !== pinned.claimHash || action.jobId !== pinned.jobId
+    || action.jobSha256 !== pinned.jobSha256 || action.grantSha256 !== pinned.grantSha256
+    || action.copySha256 !== pinned.copySha256 || action.originStateSha !== pinned.originStateSha
+    || action.runId !== pinned.runId || action.runAttempt !== "1" || action.accountId !== pinned.accountId
+    || !isRecord(lock) || lock.actionId !== pinned.actionId || lock.claimHash !== pinned.claimHash
+    || lock.stage !== "child_create_attempted" || lock.pendingChildIndex !== 3
+    || lock.createAttempts !== 4 || lock.publishAttempts !== 0 || lock.containerId !== null
+    || !Array.isArray(lock.childContainerIds)
+    || !lock.childContainerIds.every((id, index) => id === pinned.childContainerIds[index])
+    || lock.childContainerIds.length !== pinned.childContainerIds.length
+    || v3.receipts.some(item => item.actionId === pinned.actionId)
+    || v3.audit.filter(item => item.channel === "threads").at(-1)?.kind !== "threads_child_create_intent"
+    || v3.audit.filter(item => item.channel === "threads").at(-1)?.actionId !== pinned.actionId
+    || v3.audit.filter(item => item.channel === "threads").at(-1)?.childIndex !== 3) {
+    fail("incident_checkpoint_changed");
+  }
+  const original = jobFromBytes(jobBytes);
+  if (sha(original.bytes) !== pinned.jobSha256 || original.job.id !== pinned.jobId
+    || original.job.channel !== "threads" || original.job.content.koreanExpression !== pinned.targetExpression
+    || sha(Buffer.from(original.job.content.text, "utf8")) !== pinned.copySha256
+    || !Buffer.isBuffer(grantBytes) || sha(grantBytes) !== pinned.grantSha256) fail("incident_source_changed");
+  let grant, retiredJob, retiredPolicy;
+  try {
+    grant = JSON.parse(grantBytes.toString("utf8"));
+    retiredJob = JSON.parse(Buffer.from(retiredJobBytes).toString("utf8"));
+    retiredPolicy = JSON.parse(Buffer.from(retiredPolicyBytes).toString("utf8"));
+  } catch { fail("incident_source_unreadable"); }
+  if (grant?.jobId !== pinned.jobId || grant?.jobSha256 !== pinned.jobSha256
+    || retiredJob?.id !== pinned.jobId || retiredJob?.channel !== "threads"
+    || retiredJob?.strategyVersion !== STRATEGY
+    || retiredJob?.workflow?.status !== "blocked" || retiredJob?.workflow?.autoPublish !== false
+    || digest(retiredJob.content) !== action.contentSha256
+    || retiredPolicy?.strategyVersion !== STRATEGY || retiredPolicy?.channels?.threads?.enabled !== false
+    || !GIT_SHA.test(retiredMainSha || "")) fail("incident_not_retired_on_main");
+  if (!isRecord(failedRun) || String(failedRun.id) !== pinned.runId
+    || failedRun.status !== "completed" || failedRun.conclusion !== "failure"
+    || failedRun.head_sha !== pinned.runHeadSha || failedRun.run_attempt !== 1
+    || failedRun.head_branch !== "main"
+    || failedRun.path !== ".github/workflows/channel-split-v3-publisher.yml"
+    || failedRun.event !== "workflow_dispatch"
+    || failedRun.repository?.full_name !== "mindulmin/instargram-languagecafe"
+    || !Number.isFinite(dateMs(failedRun.updated_at))) fail("incident_run_not_confirmed");
+  const now = time(at);
+  if (now < time(failedRun.updated_at)
+    || !isRecord(officialHistory) || officialHistory.source !== "official_threads_graph_api_full_history"
+    || officialHistory.complete !== true || officialHistory.accountId !== pinned.accountId
+    || officialHistory.username !== "mindulmin" || !Array.isArray(officialHistory.media)
+    || officialHistory.media.length === 0 || !Number.isFinite(dateMs(officialHistory.checkedAt))
+    || !Number.isFinite(dateMs(officialHistory.identityCheckedAt))
+    || now - time(officialHistory.checkedAt) > READBACK_MAX_AGE_MS
+    || time(officialHistory.checkedAt) > now + CLOCK_SKEW_MS
+    || now - time(officialHistory.identityCheckedAt) > READBACK_MAX_AGE_MS
+    || time(officialHistory.identityCheckedAt) > now + CLOCK_SKEW_MS) fail("incident_official_history_unavailable");
+  const mediaIds = new Set();
+  for (const media of officialHistory.media) {
+    const optionalText = ["IMAGE", "VIDEO", "CAROUSEL", "CAROUSEL_ALBUM"].includes(media?.media_type);
+    if (!isRecord(media) || !numericId(String(media.id || "")) || mediaIds.has(String(media.id))
+      || !Number.isFinite(dateMs(media.timestamp))
+      || (typeof media.text !== "string" && !(optionalText && media.text == null))) fail("incident_official_history_invalid");
+    mediaIds.add(String(media.id));
+    // A textless or changed-copy post after the attempt cannot safely be
+    // identified as unrelated. Do not convert missing text into no post.
+    if (dateMs(media.timestamp) >= time(action.issuedAt) - CLOCK_SKEW_MS) {
+      fail("incident_post_after_attempt_unresolved");
+    }
+    if (media.text === original.job.content.text || (media.text || "").includes(pinned.targetExpression)) {
+      fail("incident_possible_published_match");
+    }
+  }
+  if (!Array.isArray(knownChildren) || knownChildren.length !== 3) fail("incident_children_unavailable");
+  for (let index = 0; index < 3; index += 1) {
+    const child = knownChildren[index];
+    if (!isRecord(child) || String(child.id) !== pinned.childContainerIds[index]
+      || child.status !== "FINISHED" || !Number.isFinite(dateMs(child.checkedAt))
+      || now - time(child.checkedAt) > READBACK_MAX_AGE_MS
+      || time(child.checkedAt) > now + CLOCK_SKEW_MS) fail("incident_child_status_unavailable");
+  }
+  const receipt = { status: "abandoned_before_publish_intent", strategyVersion: STRATEGY,
+    channel: "threads", actionId: action.actionId, jobId: action.jobId,
+    claimHash: action.claimHash, grantSha256: action.grantSha256, reviewer: action.reviewer,
+    runId: pinned.runId, runHeadSha: pinned.runHeadSha, retiredMainSha,
+    pendingChildIndex: 3, createAttempts: 4, publishAttempts: 0,
+    knownChildContainerIds: [...lock.childContainerIds],
+    officialHistorySha256: digest(officialHistory), knownChildrenSha256: digest(knownChildren),
+    unknownFourthChildMayExist: true, socialApiWriteCalls: 0,
+    originalAttemptRetryAuthorized: false, closedAt: at };
+  const next = withV3(ledger, state => {
+    state.locks.threads = null;
+    state.receipts.push(receipt);
+    appendAudit(state, { kind: "abandoned_before_publish_intent", channel: "threads",
+      actionId: action.actionId, claimHash: action.claimHash,
+      officialHistorySha256: receipt.officialHistorySha256,
+      knownChildrenSha256: receipt.knownChildrenSha256,
+      retiredMainSha }, at);
+  });
+  return { ledger: next, receipt: clone(receipt) };
+}
+
 module.exports = { STRATEGY, CHANNELS, checkedLedger, claimJob, confirmRemoteClaim,
   beginCreate, recordContainer, beginThreadsChildCreate, recordThreadsChildContainer,
-  beginThreadsCarouselCreate, recordThreadsCarouselContainer, beginPublish, markAmbiguous, completeVerified };
+  beginThreadsCarouselCreate, recordThreadsCarouselContainer, beginPublish, markAmbiguous, completeVerified,
+  THREADS_RECOVERY, abandonThreads36141543126 };

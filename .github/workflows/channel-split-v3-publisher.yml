@@ -106,6 +106,12 @@ jobs:
           if ($policy.schemaVersion -ne 1 -or $policy.strategyVersion -ne 'channel-split-v3' -or $policy.enabled -isnot [bool]) {
             throw 'Invalid channel-split v3 policy'
           }
+          foreach ($channel in @('instagram', 'threads')) {
+            if ($policy.channels.$channel.enabled -isnot [bool]) {
+              throw "Invalid channel-split v3 ${channel} activation"
+            }
+            "${channel}_enabled=$($policy.channels.$channel.enabled.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          }
           if ($policy.enabled) {
             'enabled=true' >> $env:GITHUB_OUTPUT
             'Channel-split v3 is enabled. Running independent channel publishers.' >> $env:GITHUB_STEP_SUMMARY
@@ -115,7 +121,7 @@ jobs:
           }
       - name: Publish Instagram promotion
         id: instagram
-        if: steps.policy.outputs.enabled == 'true'
+        if: steps.policy.outputs.enabled == 'true' && steps.policy.outputs.instagram_enabled == 'true'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -124,7 +130,7 @@ jobs:
         run: node cloud/channel-split-v3-publisher.cjs --mode publish --channel instagram --job-id auto
       - name: Publish Threads lesson cards
         id: threads
-        if: steps.policy.outputs.enabled == 'true'
+        if: steps.policy.outputs.enabled == 'true' && steps.policy.outputs.threads_enabled == 'true'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -134,8 +140,16 @@ jobs:
       - name: Report both channel outcomes
         if: always() && steps.policy.outputs.enabled == 'true'
         run: |
-          'Instagram publisher: ${{ steps.instagram.outcome }}' >> $env:GITHUB_STEP_SUMMARY
-          'Threads publisher: ${{ steps.threads.outcome }}' >> $env:GITHUB_STEP_SUMMARY
-          if ('${{ steps.instagram.outcome }}' -ne 'success' -or '${{ steps.threads.outcome }}' -ne 'success') {
-            throw 'At least one independent channel requires investigation; never retry an ambiguous API attempt.'
+          foreach ($channel in @('instagram', 'threads')) {
+            $enabled = if ($channel -eq 'instagram') { '${{ steps.policy.outputs.instagram_enabled }}' } else { '${{ steps.policy.outputs.threads_enabled }}' }
+            $outcome = if ($channel -eq 'instagram') { '${{ steps.instagram.outcome }}' } else { '${{ steps.threads.outcome }}' }
+            if ($enabled -eq 'true') {
+              "${channel} publisher: $outcome" >> $env:GITHUB_STEP_SUMMARY
+              if ($outcome -ne 'success') {
+                throw "${channel} requires investigation; never retry an ambiguous API attempt."
+              }
+            } else {
+              "${channel} publisher: paused_by_policy" >> $env:GITHUB_STEP_SUMMARY
+              if ($outcome -ne 'skipped') { throw "${channel} ran despite paused policy." }
+            }
           }

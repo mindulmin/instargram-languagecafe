@@ -111,40 +111,36 @@ before a social API intent. An uncertain cloud outcome, an unreachable state
 branch, or an unresolved channel intent blocks the local fallback; it is not
 permission to retry. Never run two independent publishing schedulers.
 
-## Current activation state
+## Current activation state (2026-09-25)
 
-- `cloud/control/policy.json` disables new v2 learning-pair releases. The old
-  GitHub Actions schedule may still run checks, but must not publish a new pair.
-- `cloud/control/channel-split-v3-policy.json` remains disabled until the
-  trusted runner, remote CAS/readback, scheduled Action, and first controlled
-  official publication have all passed. Two reviewed hosted jobs and their
-  source-controlled grants exist, but no v3 social post has been verified.
-  `channel-split-v3-preflight.yml` remains a manual test-only workflow.
-- The publisher transport's job-embedded `approved` fields and callback-shaped
-  permits are not independent approval or durable remote authorization. Direct
-  v3 publish entry points stay closed; the trusted runner must check the
-  separately versioned grant and commit/read back the claim and each
-  create/publish intent before making a social API call. Local locks on an
-  ephemeral GitHub runner do not replace this remote checkpoint.
-- The v2 global lock from run `34928034257` was closed on 2026-09-25 by
-  `cloud/close-34928034257-ig-only.cjs` after fresh complete official
-  Instagram and Threads histories and an independent remote-state readback.
-  The remote `cloud-state` head became
-  `592ae2b8ff664249d981f5c3435e516db609a403`. Its original 180
-  encrypted files, action history, receipt, and Threads per-job lock were
-  preserved; only the global v2 lock was cleared and one incident-specific
-  audit file was added. The Instagram media was published; the original
-  Threads publish returned HTTP 400 and has no verified media ID. Never
-  reuse that action or retry its Threads call. Complete current history
-  cannot prove a historical deleted post never existed. This closure does
-  **not** activate v3 or authorize a new social post.
-- Run `npm run test:channel-split` in the repository before any release. The
-  pass result proves the local contract, not public posting. Both new
-  `--publish` entry points are intentionally fail-closed until the state
-  machine is wired to trusted remote CAS, a separate approval record, and
-  pre-API intent readback. Assets and CTA still need final review; only then
-  can a controlled live post be authorized and checked through official
-  readback.
-- The landing page recently changed. A stale English-conversation CTA is a
-  release blocker. Do not treat Threads clicks as payment or as proof that
-  learners completed the Korean mission.
+- `cloud/control/policy.json` disables new v2 learning-pair releases, and its
+  old GitHub Actions schedule is removed. Historical v2 jobs, receipts and
+  unresolved per-job evidence are preserved; never retry a v2 social call.
+- `cloud/control/channel-split-v3-policy.json` enables Instagram and pauses
+  Threads independently. The v3 scheduled Action runs at 09:00 Asia/Seoul;
+  manual `preview` has no platform or remote-state credentials.
+- The first Instagram promotion was published by cloud run `36142919425` as
+  official IMAGE `17910040623524634` at
+  `https://www.instagram.com/p/DdtmV9RjJfF/`. Its remote v3 receipt is
+  `published_verified`, its Instagram lock is clear, and a fresh official
+  account media list contained exactly one matching ID and caption. This is
+  post verification, not reach, mission completion, or revenue evidence.
+- Threads run `36141543126` stopped at a fourth child IMAGE create intent,
+  before any carousel parent or publish intent. Its remote lock remains
+  unresolved, so Threads is paused. Never repeat that child create call or
+  relabel the job as published. Recovery requires a separate exact-action,
+  official-readback-backed state transition; a fresh job ID and separate
+  review are required for any later carousel.
+- The runner's source-controlled grant, current-main check, durable remote
+  CAS and independent readback gate each social API intent. These gates do
+  not cryptographically prove that future grants came from a separate human
+  or model. Until a trusted independent reviewer creates more grants, the
+  daily schedule can only consume the existing finite queue. Do not describe
+  it as unlimited autonomous content production.
+- A local fallback is implemented as a fail-closed takeover gate, not yet an
+  active Windows schedule. It requires a completed failed/missing cloud run,
+  90 minutes of grace, reachable shared state, no unresolved v3 locks, and
+  the exact current main commit. Cloud execution remains primary.
+- Missing insight metrics are unavailable, never zero. Site visits and
+  engagement are not revenue; a stale English-conversation CTA is a release
+  blocker for new Korean-learning promotions.

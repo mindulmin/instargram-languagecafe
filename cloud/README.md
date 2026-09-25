@@ -1,6 +1,12 @@
 # Cloud operations
 
-2026-09-25: New posts follow [channel-split-v3](../content-queue/CHANNEL-SPLIT-v3.md). The v2 learning-pair release policy is disabled. The procedures below describe historical v2 operation and recovery; they do not activate the independent v3 publishers. The v3 policy is also disabled until its durable cloud execution and official readbacks are verified.
+2026-09-25: New posts follow [channel-split-v3](../content-queue/CHANNEL-SPLIT-v3.md). The v2 learning-pair release policy and schedule are disabled. The procedures below describe historical v2 operation and recovery; they do not activate the independent v3 publishers. V3 Instagram is active after an official first-post readback; V3 Threads remains paused behind an unresolved child-create intent. The v3 policy, workflow and queue are the current activation sources. A daily green Action with no eligible reviewed job means no post was due, not that fresh content was generated.
+
+## Channel-split v3 operations
+
+The primary executor is `.github/workflows/channel-split-v3-publisher.yml` on `main`, scheduled for 00:00 UTC / 09:00 Asia/Seoul. Its manual `preview` mode is credential-free; `publish` runs only the policy-enabled channels. Every public write is preceded by a remote encrypted-state claim or intent and independent readback. A failed or uncertain API result retains its channel lock. Do not rerun the job or clear its lock merely because Actions displays failure. Check the Action outcome, encrypted `cloud-state` receipt, and official account media history before calling a post published. The first verified Instagram promotion is media `17910040623524634` from run `36142919425`; Threads run `36141543126` is not a verified post.
+
+The local fallback gate in `channel-split-v3-fallback.cjs` is not an installed schedule. It can take over only after the scheduled cloud run failed or was absent for at least 90 minutes, all v3 locks are resolved, the shared state is reachable, and the local checkout equals current `main`. Keep one primary scheduler and never use the local route to repeat an uncertain social API call. Future source-controlled jobs need a separate review grant bound to the final text and asset bytes; the existing first-job grant does not grant unlimited content generation.
 
 ## Execution and authority
 

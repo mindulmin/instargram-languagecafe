@@ -14,10 +14,10 @@ const TRANSITIONS = new Set([
   "beginCreate", "recordContainer", "beginThreadsChildCreate",
   "recordThreadsChildContainer", "beginThreadsCarouselCreate",
   "recordThreadsCarouselContainer", "beginPublish", "markAmbiguous",
-  "completeVerified"
+  "completeVerified", "abandonThreads36141543126"
 ]);
 const ENVELOPED = new Set(["claimJob", "beginCreate", "beginThreadsChildCreate",
-  "beginThreadsCarouselCreate", "beginPublish", "completeVerified"]);
+  "beginThreadsCarouselCreate", "beginPublish", "completeVerified", "abandonThreads36141543126"]);
 const API_INTENTS = new Set(["beginCreate", "beginThreadsChildCreate",
   "beginThreadsCarouselCreate", "beginPublish"]);
 
@@ -76,7 +76,8 @@ class V3RemoteState {
     if (kind === "claimJob" && !isRecord(result.claim)) fail("transition_result_invalid");
     if (API_INTENTS.has(kind) && (!isRecord(result.intent)
       || result.intent.mustCommitAndReadBackBeforeApi !== true)) fail("transition_result_invalid");
-    if (kind === "completeVerified" && !isRecord(result.receipt)) fail("transition_result_invalid");
+    if (["completeVerified", "abandonThreads36141543126"].includes(kind)
+      && !isRecord(result.receipt)) fail("transition_result_invalid");
     const nextLedger = ENVELOPED.has(kind) ? result.ledger : result;
     if (!isRecord(nextLedger) || isDeepStrictEqual(nextLedger, before.ledger)
       || !isDeepStrictEqual(withoutV3(nextLedger), withoutV3(before.ledger))) fail("transition_invalid");
@@ -129,6 +130,7 @@ class V3RemoteState {
   beginPublish(args) { return this.transition({ ...args, kind: "beginPublish" }); }
   markAmbiguous(args) { return this.transition({ ...args, kind: "markAmbiguous" }); }
   completeVerified(args) { return this.transition({ ...args, kind: "completeVerified" }); }
+  abandonThreads36141543126(args) { return this.transition({ ...args, kind: "abandonThreads36141543126" }); }
 }
 
 module.exports = { V3RemoteState };
