@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "status": "hosted_draft_only",
+  "project": "language-cafe-instagram-assets",
+  "deploymentUrl": "https://d0c26c95.language-cafe-instagram-assets.pages.dev",
+  "verifiedAt": "2026-09-25T12:38:51.436Z",
+  "verification": "public GET HTTP 200, image/jpeg, decoded JPEG 1080x1350, exact local SHA-256",
+  "editorialApproval": false,
+  "socialPublished": false,
+  "files": [
+    {
+      "channel": "instagram",
+      "localPath": "content-queue/instagram-promo/campaign-2026-09-25-01/artwork-feed-1080x1350.jpg",
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/instagram/ig-cafe-pilot-20260925-01.jpg",
+      "sha256": "93099ddcf0b8c2fc12147497fe8559b6bcac188aeee552f4c630bc0a47cae844",
+      "bytes": 218195
+    },
+    {
+      "channel": "threads",
+      "localPath": "content-queue/threads/campaign-2026-09-25-01/rendered/card-01.jpg",
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-01.jpg",
+      "sha256": "f78b812018635fd52d2d81ecd034538cd51de98a3fc6b99d44b4801dba193a55",
+      "bytes": 285325
+    },
+    {
+      "channel": "threads",
+      "localPath": "content-queue/threads/campaign-2026-09-25-01/rendered/card-02.jpg",
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-02.jpg",
+      "sha256": "e11cab4bf995ed5216124ad71dc1d0faa85876ebacf5a8abd2db88c9e8d9dd66",
+      "bytes": 136218
+    },
+    {
+      "channel": "threads",
+      "localPath": "content-queue/threads/campaign-2026-09-25-01/rendered/card-03.jpg",
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-03.jpg",
+      "sha256": "951beae98efe78c32fc2933a559b90ddfdb3f62825afbed61a7b165526fbaf2e",
+      "bytes": 157048
+    },
+    {
+      "channel": "threads",
+      "localPath": "content-queue/threads/campaign-2026-09-25-01/rendered/card-04.jpg",
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-04.jpg",
+      "sha256": "0efb67b12e1d5e6371273be08f499902c576b3c6052ed993ba390fb171c9fb8d",
+      "bytes": 168569
+    },
+    {
+      "channel": "threads",
+      "localPath": "content-queue/threads/campaign-2026-09-25-01/rendered/card-05.jpg",
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-05.jpg",
+      "sha256": "2adecff5fde880932dd094270a174939b6d77ce7996624e50c85b1bbd8d1780a",
+      "bytes": 169232
+    },
+    {
+      "channel": "threads",
+      "localPath": "content-queue/threads/campaign-2026-09-25-01/rendered/card-06.jpg",
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-06.jpg",
+      "sha256": "c7a68d1e9babbf8b31593a333b0068cf9fca05bf9fc07c272db0ec980b3f014d",
+      "bytes": 231838
+    }
+  ]
+}

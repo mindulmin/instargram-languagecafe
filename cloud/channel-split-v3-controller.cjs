@@ -98,6 +98,11 @@ function usedByLedger(ledger, job) {
   return [...ledger.actions, ...(ledger.receipts || [])].some(item =>
     [item.jobId, item.id, item.actionId, item.idempotencyKey].some(value => value === job.id || value === key));
 }
+function publishedByLedger(ledger, job) {
+  return Array.isArray(ledger.receipts) && ledger.receipts.some(item =>
+    item.strategyVersion === STRATEGY && item.status === 'published_verified'
+      && item.channel === job.channel && item.jobId === job.id);
+}
 function unresolvedAction(ledger, channel) {
   return ledger.actions.some(action => UNRESOLVED.has(action.status)
     && (action.channel === channel || action.channel === undefined || action.channel === null));
@@ -172,8 +177,10 @@ function decide({ policy, jobs, ledger, instagramHistory, threadsHistory, now })
       stop('minimum_gap_not_met', { nextEligibleAt: new Date(last + settings.minimumGapHours * 3600000).toISOString() });
       continue;
     }
-    const candidates = grouped[channel].filter(job => job.workflow.status === 'approved').sort((a, b) => a.id.localeCompare(b.id, 'en'));
-    if (!candidates.length) { stop('no_approved_job'); continue; }
+    const approved = grouped[channel].filter(job => job.workflow.status === 'approved').sort((a, b) => a.id.localeCompare(b.id, 'en'));
+    if (!approved.length) { stop('no_approved_job'); continue; }
+    const candidates = approved.filter(job => !publishedByLedger(ledger, job));
+    if (!candidates.length) { stop('all_approved_jobs_published'); continue; }
     const job = candidates[0];
     if (usedByLedger(ledger, job)) { stop('job_already_attempted'); continue; }
     const copy = channel === 'instagram' ? job.content.caption : job.content.text;

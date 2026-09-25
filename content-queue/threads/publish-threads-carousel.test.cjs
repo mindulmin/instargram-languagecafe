@@ -455,12 +455,13 @@ test("official child-detail adapter requests only read-only identity and media f
   const requests = [];
   const api = createThreadsApi({ fetchImpl: async (url, options) => {
     requests.push({ url: String(url), method: options.method });
-    return { ok: true, status: 200, async text() { return JSON.stringify({ id: "4001", alt_text: "Card one" }); } };
+    return { ok: true, status: 200, async text() { return JSON.stringify({ id: "4001", media_type: "IMAGE", alt_text: "Card one" }); } };
   } });
   const detail = await api.getChildMedia(session(), "4001");
   assert.equal(detail.id, "4001");
+  assert.equal(detail.media_type, "IMAGE");
   assert.equal(requests[0].method, "GET");
-  assert.ok(requests[0].url.includes("/4001?fields=id%2Cmedia_url%2Calt_text"));
+  assert.ok(requests[0].url.includes("/4001?fields=id%2Cmedia_type%2Cmedia_url%2Calt_text"));
 });
 
 test("published child order mismatch does not claim fully verified publication", async (t) => {

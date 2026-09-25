@@ -16,10 +16,14 @@ duplicate checks. A Threads card is complete without an Instagram source post;
 an Instagram promotion is complete without a Threads reply. A post on either
 platform does not authorize a second post on the other.
 
-The first review-only drafts are
+The first reviewed, hosted queue items are
 [`Instagram café promotion`](instagram-promo/campaign-2026-09-25-01/brief.md)
 and [`Threads takeaway expression cards`](threads/campaign-2026-09-25-01/README.md).
-They are not approved jobs, live assets, or publishing permits.
+Their exact jobs and separate source-controlled editorial grants were bound
+on 2026-09-25. This is a queued-content decision, not a cloud claim, social
+API permit, or proof of a live post. The grant writer was separate from the
+draft asset producer for this initial queue; the repository format alone does
+not cryptographically enforce that separation for future AI-generated jobs.
 
 ## Instagram promotion
 
@@ -74,8 +78,16 @@ They are not approved jobs, live assets, or publishing permits.
 
 ## Release and measurement
 
-1. Select and review an unused source for each channel. Review the finished
-   image and final caption before any API write.
+The owner authorized automatic publication without a separate approval click
+for each new post on 2026-09-25. This waives the owner's per-post decision,
+not the content, identity, offer, duplicate, hosting, and exact-once gates.
+The publishing process must use an independent trusted review record bound
+to the final job bytes and image hashes; a job's own `approved` field or a
+generator's self-attestation is not that record. If independent review or
+fresh live offer evidence is unavailable, stop without posting.
+
+1. Select an unused source for each channel, produce the final image and
+   caption, and complete the independent quality review before any API write.
 2. Use distinct v3 job IDs and durable pre-API locks. One create/publish
    attempt per job; an uncertain API outcome stays blocked until official
    readback resolves it.
@@ -93,32 +105,39 @@ They are not approved jobs, live assets, or publishing permits.
 The old v2 cloud publisher must stop issuing learning-pair releases before
 this v3 strategy is activated. Do not relabel a v2 receipt as a v3 post.
 
+Cloud is the primary executor. A local fallback may use the same encrypted
+remote state and atomic claims only after it can prove the cloud run stopped
+before a social API intent. An uncertain cloud outcome, an unreachable state
+branch, or an unresolved channel intent blocks the local fallback; it is not
+permission to retry. Never run two independent publishing schedulers.
+
 ## Current activation state
 
 - `cloud/control/policy.json` disables new v2 learning-pair releases. The old
   GitHub Actions schedule may still run checks, but must not publish a new pair.
-- `cloud/control/channel-split-v3-policy.json` is disabled. The dedicated
-  channel publishers, read-only candidate selector, and pure claim/checkpoint
-  state machine are implemented, but the state machine is **not connected**
-  to a trusted GitHub Actions publisher or remote CAS/readback. No approved
-  hosted creative job or scheduled v3 publisher is active.
-  `channel-split-v3-preflight.yml` is manual and
-  test-only; it does not need social credentials or publish.
+- `cloud/control/channel-split-v3-policy.json` remains disabled until the
+  trusted runner, remote CAS/readback, scheduled Action, and first controlled
+  official publication have all passed. Two reviewed hosted jobs and their
+  source-controlled grants exist, but no v3 social post has been verified.
+  `channel-split-v3-preflight.yml` remains a manual test-only workflow.
 - The publisher transport's job-embedded `approved` fields and callback-shaped
   permits are not independent approval or durable remote authorization. Direct
-  v3 publish entry points must remain closed until one trusted controller
-  verifies a separate approval record and commits/reads back the claim and
-  each create/publish intent before making a social API call. Local locks on
-  an ephemeral GitHub runner do not replace this remote checkpoint.
-- A v2 global lock from run `34928034257` remains
-  `needs_official_readback`: the Instagram media was published, while its
-  Threads companion publish returned HTTP 400 and has no verified media ID.
-  Do not reuse that action, retry the Threads call, or clear the lock just
-  because a later full history contains no matching post. Preserve the
-  original receipt and require an incident-specific, audited resolution
-  with fresh complete official histories and remote state readback before
-  activating v3. `cloud/resolve-34928034257-ig-only.cjs` is read-only and
-  does **not** unlock or write remote state.
+  v3 publish entry points stay closed; the trusted runner must check the
+  separately versioned grant and commit/read back the claim and each
+  create/publish intent before making a social API call. Local locks on an
+  ephemeral GitHub runner do not replace this remote checkpoint.
+- The v2 global lock from run `34928034257` was closed on 2026-09-25 by
+  `cloud/close-34928034257-ig-only.cjs` after fresh complete official
+  Instagram and Threads histories and an independent remote-state readback.
+  The remote `cloud-state` head became
+  `592ae2b8ff664249d981f5c3435e516db609a403`. Its original 180
+  encrypted files, action history, receipt, and Threads per-job lock were
+  preserved; only the global v2 lock was cleared and one incident-specific
+  audit file was added. The Instagram media was published; the original
+  Threads publish returned HTTP 400 and has no verified media ID. Never
+  reuse that action or retry its Threads call. Complete current history
+  cannot prove a historical deleted post never existed. This closure does
+  **not** activate v3 or authorize a new social post.
 - Run `npm run test:channel-split` in the repository before any release. The
   pass result proves the local contract, not public posting. Both new
   `--publish` entry points are intentionally fail-closed until the state

@@ -1,14 +1,12 @@
-name: Language Cafe scheduled publisher
+name: Language Cafe v2 historical recovery
 
 on:
-  schedule:
-    - cron: '0 0 * * *' # 09:00 Asia/Seoul; GitHub scheduling may be delayed.
   workflow_dispatch:
     inputs:
       mode:
-        description: 'preflight: infrastructure; controller-preview: select only; publish: full workflow; reconcile: verify existing pair and unattempted Story'
+        description: 'Historical v2 preflight or exact-attempt recovery only; no new v2 publication'
         type: choice
-        options: [preflight, controller-preview, publish, reconcile, complete-story]
+        options: [preflight, controller-preview, reconcile, complete-story]
         default: preflight
 
 concurrency:
@@ -32,6 +30,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Reject new v2 publication modes
+        env:
+          V2_MODE: ${{ inputs.mode }}
+        run: |
+          if ($env:V2_MODE -notin @('preflight', 'controller-preview', 'reconcile', 'complete-story')) {
+            throw 'This workflow is reserved for historical v2 recovery.'
+          }
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -76,7 +81,7 @@ jobs:
           THREADS_SESSION_JSON: ${{ secrets.THREADS_SESSION_JSON }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          RUN_MODE: ${{ inputs.mode || 'publish' }}
+          RUN_MODE: ${{ inputs.mode || 'preflight' }}
         run: node cloud/runner.cjs prepare
       - name: Reconcile existing pair without repeating either post
         if: inputs.mode == 'reconcile' || inputs.mode == 'complete-story'

@@ -569,7 +569,7 @@ if (require.main === module) {
 }
 
 module.exports = { APP_ID, STRATEGY_VERSION, acquireLock, assertCloudV3Permit, captionErrors,
-  duplicateMedia, hostedImageUrl, isExpectedProfileWebsite, normalizeCaption, parseArgs,
+  createInstagramApi, duplicateMedia, hostedImageUrl, isExpectedProfileWebsite, normalizeCaption, parseArgs,
   publishPromoJob, readLimitedBytes, resolveJobPath, runCli, sessionValues, sha256,
   simulateInstagramTransportForTests, simulatePromoJobForTests,
   validateJob, verifyHostedImage, verifyIdentity, verifyPublishedMedia };

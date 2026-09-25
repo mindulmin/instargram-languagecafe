@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "ig-cafe-pilot-20260925-01",
+  "channel": "instagram",
+  "strategyVersion": "channel-split-v3",
+  "workflow": {
+    "status": "approved",
+    "autoPublish": true
+  },
+  "content": {
+    "caption": "Ordering in Korean is one thing. Answering the next café question is another.\n\nThe barista asks, “For here or to go?” One answer you can use is 포장해 주세요. — “To go, please.”\n\nIn Language Cafe’s free Korean café pilot, you try an order first, get help where you need it, and answer again when the order changes. It’s for beginners who can read Hangul and follow English guidance.\n\nOpen the link in this profile → Free Korean mission. Log in to start; no card is required.\n\n#LearnKorean #KoreanForBeginners #KoreanCafe #KoreanPractice",
+    "destinationUrl": "https://languagestudio.uk/missions/korean-cafe/",
+    "image": {
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/instagram/ig-cafe-pilot-20260925-01.jpg",
+      "sha256": "93099ddcf0b8c2fc12147497fe8559b6bcac188aeee552f4c630bc0a47cae844"
+    }
+  },
+  "editorialReview": {
+    "status": "approved",
+    "offerClaimApproved": true,
+    "landingMatchApproved": true,
+    "profileCtaApproved": true,
+    "visualApproved": true,
+    "captionSha256": "c6d4fe4c28e00f264854e93967e9505f23ce36d34326293ee27137a4685b982f",
+    "imageSha256": "93099ddcf0b8c2fc12147497fe8559b6bcac188aeee552f4c630bc0a47cae844",
+    "destinationUrl": "https://languagestudio.uk/missions/korean-cafe/",
+    "evidence": {
+      "homepage": {
+        "url": "https://languagestudio.uk/",
+        "checkedAt": "2026-09-25T12:41:18Z",
+        "linksToDestination": true
+      },
+      "mission": {
+        "url": "https://languagestudio.uk/missions/korean-cafe/",
+        "checkedAt": "2026-09-25T12:41:24Z",
+        "freePilotVerified": true,
+        "orderPracticeVerified": true,
+        "hangulReaderPrerequisiteVerified": true,
+        "loginRequiredVerified": true,
+        "noCardRequiredVerified": true
+      },
+      "profile": {
+        "website": "https://languagestudio.uk/",
+        "username": "mindulmin",
+        "checkedAt": "2026-09-25T12:41:18Z"
+      },
+      "approvedClaimIds": ["free_korean_cafe_ordering_pilot_after_login"]
+    }
+  },
+  "draftEvidence": {
+    "assetManifest": "content-queue/instagram-promo/campaign-2026-09-25-01/asset-hosting-evidence.json",
+    "artworkSource": "content-queue/instagram-promo/campaign-2026-09-25-01/artwork.svg",
+    "captionSource": "content-queue/instagram-promo/campaign-2026-09-25-01/caption-draft.md",
+    "homepageCheckedAt": "2026-09-25T12:41:18Z",
+    "missionCheckedAt": "2026-09-25T12:41:24Z",
+    "profileWebsiteCheckedAt": "2026-09-25T12:41:18Z",
+    "notes": "Live homepage, Korean mission and official Instagram profile link were checked. This job carries no publish authorization."
+  }
+}

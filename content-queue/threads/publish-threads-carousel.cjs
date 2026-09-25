@@ -340,7 +340,7 @@ function createThreadsApi({ fetchImpl = globalThis.fetch, baseUrl = API_BASE, ti
     },
     async getChildMedia(session, id) {
       return request("GET", `/${encodeURIComponent(id)}`, "published-child readback", session,
-        { fields: "id,media_url,alt_text" });
+        { fields: "id,media_type,media_url,alt_text" });
     }
   };
 }

@@ -1,0 +1,141 @@
+name: Language Cafe channel split v3 publisher
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 09:00 Asia/Seoul; GitHub may delay scheduled jobs.
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'preview reads reviewed jobs without credentials; publish runs independent channels'
+        type: choice
+        options: [preview, publish]
+        default: preview
+
+concurrency:
+  group: language-cafe-publisher
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    if: github.repository == 'mindulmin/instargram-languagecafe' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.mode == 'preview'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate the isolated checkout
+        run: |
+          npm ci --ignore-scripts
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run test:channel-split
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Preview both channels without social or state credentials
+        run: |
+          $grantDirectory = 'cloud/control/channel-split-v3-grants'
+          if (-not (Test-Path -LiteralPath $grantDirectory -PathType Container)) {
+            throw 'Independent review grant directory is missing.'
+          }
+          $grantFiles = @(Get-ChildItem -LiteralPath $grantDirectory -File -Filter '*.json' | Sort-Object Name)
+          $seen = @{ instagram = 0; threads = 0 }
+          $failed = $false
+          foreach ($grantFile in $grantFiles) {
+            try {
+              $grant = Get-Content -LiteralPath $grantFile.FullName -Raw | ConvertFrom-Json -ErrorAction Stop
+              $channel = [string]$grant.channel
+              $jobId = [string]$grant.jobId
+              if ($channel -notin @('instagram', 'threads') -or $jobId -cne $grantFile.BaseName -or
+                $jobId -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{2,119}$') {
+                throw 'Grant channel or canonical job ID is invalid.'
+              }
+            } catch {
+              "Invalid review grant file: $($grantFile.Name)" >> $env:GITHUB_STEP_SUMMARY
+              $failed = $true
+              continue
+            }
+            $seen[$channel] += 1
+            node cloud/channel-split-v3-publisher.cjs --mode preview --channel $channel --job-id $jobId
+            "${channel}/${jobId} preview exit: $LASTEXITCODE" >> $env:GITHUB_STEP_SUMMARY
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          }
+          foreach ($channel in @('instagram', 'threads')) {
+            if ($seen[$channel] -eq 0) { "${channel}: no independent review grant to preview." >> $env:GITHUB_STEP_SUMMARY }
+          }
+          if ($failed) { exit 1 }
+
+  publish:
+    if: github.repository == 'mindulmin/instargram-languagecafe' && github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.mode == 'publish')
+    runs-on: windows-latest
+    timeout-minutes: 50
+    permissions:
+      contents: write # Non-forced CAS checkpoints on the cloud-state branch.
+      actions: read # Verify this exact active workflow run before any social claim.
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate the isolated checkout
+        run: |
+          npm ci --ignore-scripts
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run test:cloud
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Check explicit v3 activation
+        id: policy
+        run: |
+          $policy = Get-Content -LiteralPath 'cloud/control/channel-split-v3-policy.json' -Raw | ConvertFrom-Json
+          if ($policy.schemaVersion -ne 1 -or $policy.strategyVersion -ne 'channel-split-v3' -or $policy.enabled -isnot [bool]) {
+            throw 'Invalid channel-split v3 policy'
+          }
+          if ($policy.enabled) {
+            'enabled=true' >> $env:GITHUB_OUTPUT
+            'Channel-split v3 is enabled. Running independent channel publishers.' >> $env:GITHUB_STEP_SUMMARY
+          } else {
+            'enabled=false' >> $env:GITHUB_OUTPUT
+            'Channel-split v3 is disabled. No social credentials were injected or API calls attempted.' >> $env:GITHUB_STEP_SUMMARY
+          }
+      - name: Publish Instagram promotion
+        id: instagram
+        if: steps.policy.outputs.enabled == 'true'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          LANGUAGE_CAFE_STATE_KEY: ${{ secrets.LANGUAGE_CAFE_STATE_KEY }}
+          INSTAGRAM_SESSION_JSON: ${{ secrets.INSTAGRAM_SESSION_JSON }}
+        run: node cloud/channel-split-v3-publisher.cjs --mode publish --channel instagram --job-id auto
+      - name: Publish Threads lesson cards
+        id: threads
+        if: steps.policy.outputs.enabled == 'true'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          LANGUAGE_CAFE_STATE_KEY: ${{ secrets.LANGUAGE_CAFE_STATE_KEY }}
+          THREADS_SESSION_JSON: ${{ secrets.THREADS_SESSION_JSON }}
+        run: node cloud/channel-split-v3-publisher.cjs --mode publish --channel threads --job-id auto
+      - name: Report both channel outcomes
+        if: always() && steps.policy.outputs.enabled == 'true'
+        run: |
+          'Instagram publisher: ${{ steps.instagram.outcome }}' >> $env:GITHUB_STEP_SUMMARY
+          'Threads publisher: ${{ steps.threads.outcome }}' >> $env:GITHUB_STEP_SUMMARY
+          if ('${{ steps.instagram.outcome }}' -ne 'success' -or '${{ steps.threads.outcome }}' -ne 'success') {
+            throw 'At least one independent channel requires investigation; never retry an ambiguous API attempt.'
+          }

@@ -13,6 +13,8 @@ const EXPIRY = "2026-09-25T02:25:00.000Z";
 const COMMIT = { before: "a".repeat(40), claimed: "b".repeat(40), create: "c".repeat(40),
   container: "d".repeat(40), publish: "e".repeat(40) };
 const hash = value => crypto.createHash("sha256").update(value).digest("hex");
+const GRANT_SHA = "9".repeat(64);
+const REVIEWER = "independent_editorial_controller_v1";
 const baseLedger = () => ({ version: 1, lock: null,
   actions: [{ actionId: "old-v2-action", requestedPostId: "old-v2-job", status: "completed" }],
   receipts: [{ actionId: "old-v2-action", status: "published_learning_pair_exactly_once" }],
@@ -21,7 +23,7 @@ function fixture(channel = "instagram", id = channel === "instagram" ? "ig-promo
   const imageBytes = channel === "instagram" ? [Buffer.from("first-image")]
     : [Buffer.from("first-card"), Buffer.from("second-card")];
   const images = imageBytes.map((bytes, index) => ({ url: `https://aabbccdd.language-cafe-instagram-assets.pages.dev/${id}-${index + 1}.jpg`,
-    sha256: hash(bytes) }));
+    sha256: hash(bytes), ...(channel === "threads" ? { altText: `Card ${index + 1}: Korean cafe expression and English practice.` } : {}) }));
   const copy = channel === "instagram"
     ? "Try the free Korean cafe pilot at Language Cafe. Find it through the profile link."
     : "At the cafe, say 포장해 주세요. To go, please.\nTry the Korean cafe mission → https://languagestudio.uk/missions/korean-cafe/";
@@ -30,6 +32,7 @@ function fixture(channel = "instagram", id = channel === "instagram" ? "ig-promo
       ? { caption: copy, image: images[0] }
       : { text: copy, images, siteUrl: "https://languagestudio.uk/missions/korean-cafe/" } };
   return { channel, id, copy, job, jobBytes: Buffer.from(`${JSON.stringify(job)}\n`),
+    grantSha256: GRANT_SHA, reviewer: REVIEWER,
     verifiedAssets: images.map((image, index) => ({ url: image.url, bytes: imageBytes[index] })),
     jobPath: `content-queue/${channel === "instagram" ? "instagram-promo" : "threads"}/jobs/${id}.json`,
     accountId: channel === "instagram" ? "17841476495914369" : "123456789012345" };
@@ -39,7 +42,8 @@ function claim(f, ledger = baseLedger(), actionId = `action-${f.id}`) {
   const result = state.claimJob({ ledger, expectedRemoteStateSha: COMMIT.before,
     observedRemoteStateSha: COMMIT.before, jobBytes: f.jobBytes, jobPath: f.jobPath,
     verifiedAssets: f.verifiedAssets, selectedJobId: f.id, runId: "36129604025", runAttempt: 1,
-    actionId, accountId: f.accountId, issuedAt: T0, validUntil: EXPIRY });
+    actionId, accountId: f.accountId, issuedAt: T0, validUntil: EXPIRY,
+    grantSha256: f.grantSha256, reviewer: f.reviewer });
   assert.deepEqual(ledger, original, "pure transition must preserve input");
   return result;
 }
@@ -51,6 +55,33 @@ function confirmed(f) {
 }
 function attempted(f) {
   const initial = confirmed(f);
+  if (f.channel === "threads") {
+    let ledger = initial.ledger;
+    let remoteSha = COMMIT.claimed;
+    const checkpoint = number => number.toString(16).padStart(40, "0");
+    for (let index = 0; index < f.verifiedAssets.length; index += 1) {
+      const child = state.beginThreadsChildCreate({ ledger, permit: initial.permit,
+        expectedRemoteStateSha: remoteSha, observedRemoteStateSha: remoteSha,
+        jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, childIndex: index, at: T1 });
+      remoteSha = checkpoint(index * 2 + 1);
+      ledger = state.recordThreadsChildContainer({ ledger: child.ledger, permit: initial.permit,
+        expectedRemoteStateSha: remoteSha, observedRemoteStateSha: remoteSha,
+        childIndex: index, containerId: String(7000 + index), at: T2 });
+      remoteSha = checkpoint(index * 2 + 2);
+    }
+    const parent = state.beginThreadsCarouselCreate({ ledger, permit: initial.permit,
+      expectedRemoteStateSha: remoteSha, observedRemoteStateSha: remoteSha,
+      jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T2 });
+    remoteSha = checkpoint(f.verifiedAssets.length * 2 + 1);
+    ledger = state.recordThreadsCarouselContainer({ ledger: parent.ledger, permit: initial.permit,
+      expectedRemoteStateSha: remoteSha, observedRemoteStateSha: remoteSha,
+      containerId: "987654321", at: T3 });
+    remoteSha = checkpoint(f.verifiedAssets.length * 2 + 2);
+    const publishing = state.beginPublish({ ledger, permit: initial.permit,
+      expectedRemoteStateSha: remoteSha, observedRemoteStateSha: remoteSha,
+      jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T3 });
+    return { ...initial, withContainer: ledger, parent, publishing, publishStateSha: checkpoint(f.verifiedAssets.length * 2 + 3) };
+  }
   const created = state.beginCreate({ ledger: initial.ledger, permit: initial.permit,
     expectedRemoteStateSha: COMMIT.claimed, observedRemoteStateSha: COMMIT.claimed,
     jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T1 });
@@ -66,15 +97,20 @@ function readback(f, overrides = {}) {
   return { source: f.channel === "instagram" ? "official_instagram_graph_api_recent_media" : "official_threads_graph_api_recent_media",
     complete: true, accountId: f.accountId, checkedAt: T4, expectedCopy: f.copy,
     media: [{ id: "112233445566", [f.channel === "instagram" ? "caption" : "text"]: f.copy,
-      mediaType: f.channel === "instagram" ? "IMAGE" : "CAROUSEL",
+      mediaType: f.channel === "instagram" ? "IMAGE" : "CAROUSEL_ALBUM",
       permalink: f.channel === "instagram" ? "https://www.instagram.com/p/verifiedOne/"
         : "https://www.threads.com/@mindulmin/post/verifiedOne",
-      timestamp: T3, verifiedImageSha256: f.verifiedAssets.map(asset => hash(asset.bytes)),
-      imageEvidenceSource: "official_media_url_verified_bytes" }], ...overrides };
+      timestamp: T3,
+      ...(f.channel === "threads" ? { childrenEvidenceSource: "official_threads_graph_api_parent_children",
+        childrenComplete: true,
+        children: f.job.content.images.map((image, index) => ({ id: String(8000 + index),
+          mediaType: "IMAGE", mediaUrl: `https://scontent.example.test/transcoded-card-${index + 1}.jpg`,
+          altText: image.altText, creationId: String(7000 + index) })) } : {}) }], ...overrides };
 }
 function complete(f, attemptedState, official = readback(f)) {
   return state.completeVerified({ ledger: attemptedState.publishing.ledger, permit: attemptedState.permit,
-    expectedRemoteStateSha: COMMIT.publish, observedRemoteStateSha: COMMIT.publish,
+    expectedRemoteStateSha: attemptedState.publishStateSha || COMMIT.publish,
+    observedRemoteStateSha: attemptedState.publishStateSha || COMMIT.publish,
     jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, readback: official,
     expectedMediaId: "112233445566", at: T4 });
 }
@@ -83,6 +119,8 @@ test("claim preserves all v2 fields and binds exact job bytes, assets, channel, 
   const f = fixture(), original = baseLedger(), { ledger, claim: action } = claim(f, original);
   for (const [key, value] of Object.entries(original)) assert.deepEqual(ledger[key], value);
   assert.equal(action.jobSha256, hash(f.jobBytes));
+  assert.equal(action.grantSha256, f.grantSha256);
+  assert.equal(action.reviewer, f.reviewer);
   assert.equal(action.assets[0].sha256, hash(f.verifiedAssets[0].bytes));
   assert.equal(action.channel, "instagram");
   assert.equal(action.accountId, f.accountId);
@@ -90,6 +128,25 @@ test("claim preserves all v2 fields and binds exact job bytes, assets, channel, 
   assert.equal(ledger.channelSplitV3.locks.threads, null);
   assert.equal(ledger.channelSplitV3.locks.instagram.stage, "claimed");
   assert.equal(state.checkedLedger(ledger).audit.length, 1);
+});
+
+test("the exact independent grant is bound to the remote claim, permit and final receipt", () => {
+  const f = fixture();
+  assert.throws(() => claim({ ...f, grantSha256: undefined }), /claim_identity_invalid/);
+  assert.throws(() => claim({ ...f, reviewer: "job_author" }), /claim_identity_invalid/);
+  const ready = confirmed(f);
+  assert.equal(ready.permit.grantSha256, f.grantSha256);
+  assert.equal(ready.permit.reviewer, f.reviewer);
+  const changed = { ...ready.permit, grantSha256: "8".repeat(64) };
+  assert.throws(() => state.beginCreate({ ledger: ready.ledger, permit: changed,
+    expectedRemoteStateSha: COMMIT.claimed, observedRemoteStateSha: COMMIT.claimed,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T1 }), /permit_or_claim_mismatch/);
+  const done = complete(f, attempted(f));
+  assert.equal(done.receipt.grantSha256, f.grantSha256);
+  assert.equal(done.receipt.reviewer, f.reviewer);
+  const tampered = structuredClone(done.ledger);
+  tampered.channelSplitV3.receipts[0].grantSha256 = "8".repeat(64);
+  assert.throws(() => state.checkedLedger(tampered), /receipt_invalid_or_duplicate/);
 });
 
 test("v2 unresolved global lock forbids any v3 claim or transition and is never cleared", () => {
@@ -107,7 +164,8 @@ test("wrong path, candidate, account, remote state, job bytes, and raw assets ca
   const args = { ledger: baseLedger(), expectedRemoteStateSha: COMMIT.before,
     observedRemoteStateSha: COMMIT.before, jobBytes: f.jobBytes, jobPath: f.jobPath,
     verifiedAssets: f.verifiedAssets, selectedJobId: f.id, runId: "36129604025",
-    runAttempt: 1, actionId: "action-001", accountId: f.accountId, issuedAt: T0, validUntil: EXPIRY };
+    runAttempt: 1, actionId: "action-001", accountId: f.accountId, issuedAt: T0, validUntil: EXPIRY,
+    grantSha256: f.grantSha256, reviewer: f.reviewer };
   for (const changed of [
     { jobPath: `content-queue/threads/jobs/${f.id}.json` }, { selectedJobId: "different" },
     { accountId: "not-numeric" }, { observedRemoteStateSha: COMMIT.claimed },
@@ -201,7 +259,7 @@ test("missing, stale, partial, cross-account or duplicate readback cannot unlock
   const failures = [null, { ...good, complete: false }, { ...good, checkedAt: "2026-09-24T02:00:00Z" },
     { ...good, accountId: "999999999" }, { ...good, expectedCopy: "other copy" },
     { ...good, media: [...good.media, { ...good.media[0], id: "223344556677" }] },
-    { ...good, media: [{ ...good.media[0], verifiedImageSha256: ["f".repeat(64)] }] },
+    { ...good, media: [{ ...good.media[0], id: "not-a-media-id" }] },
     { ...good, media: [{ ...good.media[0], mediaType: "VIDEO" }] },
     { ...good, media: [{ ...good.media[0], timestamp: "2026-09-20T02:00:00Z" }] }];
   for (const official of failures) {
@@ -242,14 +300,151 @@ test("cross-channel claims and locks are independent but a permit cannot cross c
   assert.throws(() => claim(th, thClaimed.ledger), /channel_lock_unresolved/);
 });
 
-test("a Threads carousel needs official ordered image hashes and a Threads permalink", () => {
+test("a Threads carousel needs official ordered child identity and a Threads permalink, not identical CDN bytes", () => {
   const f = fixture("threads"), attempt = attempted(f);
   const good = readback(f);
-  assert.equal(complete(f, attempt, good).receipt.channel, "threads");
+  const receipt = complete(f, attempt, good).receipt;
+  assert.equal(receipt.channel, "threads");
+  assert.equal(receipt.mediaType, "CAROUSEL_ALBUM");
+  const alternateOfficialEnum = { ...good, media: [{ ...good.media[0], mediaType: "CAROUSEL" }] };
+  assert.equal(complete(f, attempt, alternateOfficialEnum).receipt.mediaType, "CAROUSEL");
+  const unrelatedType = { ...good, media: [{ ...good.media[0], mediaType: "VIDEO" }] };
+  assert.throws(() => complete(f, attempt, unrelatedType), /official_media_verification_failed/);
+  assert.deepEqual(receipt.publishedChildMediaIds, ["8000", "8001"]);
+  assert.deepEqual(receipt.sourceAssetSha256, f.verifiedAssets.map(asset => hash(asset.bytes)));
   assert.throws(() => complete(f, attempt, { ...good, media: [{ ...good.media[0],
-    verifiedImageSha256: [...good.media[0].verifiedImageSha256].reverse() }] }), /official_media_verification_failed/);
+    children: [...good.media[0].children].reverse() }] }), /official_media_verification_failed/);
   assert.throws(() => complete(f, attempt, { ...good, media: [{ ...good.media[0],
     permalink: "https://www.instagram.com/p/wrong/" }] }), /official_media_verification_failed/);
+});
+
+test("Threads child and parent each need their own durable one-attempt intent", () => {
+  const f = fixture("threads"), ready = confirmed(f);
+  assert.throws(() => state.beginCreate({ ledger: ready.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.claimed, observedRemoteStateSha: COMMIT.claimed,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T1 }), /create_attempt_not_available/);
+  assert.throws(() => state.beginThreadsCarouselCreate({ ledger: ready.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.claimed, observedRemoteStateSha: COMMIT.claimed,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T1 }), /threads_carousel_attempt_not_available/);
+  const child0 = state.beginThreadsChildCreate({ ledger: ready.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.claimed, observedRemoteStateSha: COMMIT.claimed,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, childIndex: 0, at: T1 });
+  assert.equal(child0.intent.mustCommitAndReadBackBeforeApi, true);
+  assert.equal(child0.intent.imageSha256, hash(f.verifiedAssets[0].bytes));
+  assert.throws(() => state.beginThreadsChildCreate({ ledger: child0.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.create, observedRemoteStateSha: COMMIT.create,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, childIndex: 0, at: T2 }), /threads_child_attempt_not_available/);
+  assert.throws(() => state.recordThreadsChildContainer({ ledger: child0.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.claimed, observedRemoteStateSha: COMMIT.claimed,
+    childIndex: 0, containerId: "7000", at: T2 }), /threads_child_receipt_invalid/);
+  const after0 = state.recordThreadsChildContainer({ ledger: child0.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.create, observedRemoteStateSha: COMMIT.create,
+    childIndex: 0, containerId: "7000", at: T2 });
+  assert.throws(() => state.beginThreadsCarouselCreate({ ledger: after0, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.container, observedRemoteStateSha: COMMIT.container,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T2 }), /threads_carousel_attempt_not_available/);
+  const child1 = state.beginThreadsChildCreate({ ledger: after0, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.container, observedRemoteStateSha: COMMIT.container,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, childIndex: 1, at: T2 });
+  assert.throws(() => state.recordThreadsChildContainer({ ledger: child1.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.publish, observedRemoteStateSha: COMMIT.publish,
+    childIndex: 1, containerId: "7000", at: T2 }), /threads_child_receipt_invalid/);
+  const after1 = state.recordThreadsChildContainer({ ledger: child1.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.publish, observedRemoteStateSha: COMMIT.publish,
+    childIndex: 1, containerId: "7001", at: T2 });
+  const parent = state.beginThreadsCarouselCreate({ ledger: after1, permit: ready.permit,
+    expectedRemoteStateSha: "f".repeat(40), observedRemoteStateSha: "f".repeat(40),
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T3 });
+  assert.deepEqual(parent.intent.orderedChildContainerIds, ["7000", "7001"]);
+  assert.equal(parent.intent.mustCommitAndReadBackBeforeApi, true);
+  assert.throws(() => state.beginThreadsCarouselCreate({ ledger: parent.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.create, observedRemoteStateSha: COMMIT.create,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T3 }), /threads_carousel_attempt_not_available/);
+  const withParent = state.recordThreadsCarouselContainer({ ledger: parent.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.create, observedRemoteStateSha: COMMIT.create,
+    containerId: "987654321", at: T3 });
+  const publish = state.beginPublish({ ledger: withParent, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.container, observedRemoteStateSha: COMMIT.container,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T3 });
+  assert.equal(publish.intent.containerId, "987654321");
+  assert.deepEqual(publish.intent.orderedChildContainerIds, ["7000", "7001"]);
+  assert.throws(() => state.beginPublish({ ledger: publish.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.publish, observedRemoteStateSha: COMMIT.publish,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, at: T4 }), /publish_attempt_not_available/);
+});
+
+test("ambiguous Threads child or parent creation retains lock and forbids continuation", () => {
+  const f = fixture("threads"), ready = confirmed(f);
+  const child = state.beginThreadsChildCreate({ ledger: ready.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.claimed, observedRemoteStateSha: COMMIT.claimed,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, childIndex: 0, at: T1 });
+  const blockedChild = state.markAmbiguous({ ledger: child.ledger, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.create, observedRemoteStateSha: COMMIT.create,
+    stage: "child_create_attempted", at: T2 });
+  assert.equal(blockedChild.channelSplitV3.locks.threads.stage, "ambiguous");
+  assert.throws(() => state.recordThreadsChildContainer({ ledger: blockedChild, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.container, observedRemoteStateSha: COMMIT.container,
+    childIndex: 0, containerId: "7000", at: T2 }), /threads_child_receipt_invalid/);
+  assert.throws(() => state.beginThreadsChildCreate({ ledger: blockedChild, permit: ready.permit,
+    expectedRemoteStateSha: COMMIT.container, observedRemoteStateSha: COMMIT.container,
+    jobBytes: f.jobBytes, verifiedAssets: f.verifiedAssets, childIndex: 0, at: T2 }), /threads_child_attempt_not_available/);
+  const full = attempted(f);
+  const parentAmbiguous = state.markAmbiguous({ ledger: full.parent.ledger, permit: full.permit,
+    expectedRemoteStateSha: COMMIT.create, observedRemoteStateSha: COMMIT.create,
+    stage: "parent_create_attempted", at: T3 });
+  assert.equal(parentAmbiguous.channelSplitV3.locks.threads.ambiguousFrom, "parent_create_attempted");
+  assert.throws(() => state.recordThreadsCarouselContainer({ ledger: parentAmbiguous, permit: full.permit,
+    expectedRemoteStateSha: COMMIT.container, observedRemoteStateSha: COMMIT.container,
+    containerId: "987654321", at: T3 }), /threads_carousel_receipt_invalid/);
+});
+
+test("official Threads child evidence must be complete, uniquely identified, typed, ordered, and bound", () => {
+  const f = fixture("threads"), attempt = attempted(f), good = readback(f);
+  const original = good.media[0], children = original.children;
+  const bad = [
+    { childrenComplete: false }, { childrenEvidenceSource: "local_guess" }, { children: children.slice(0, 1) },
+    { children: [{ ...children[0], id: children[1].id }, children[1]] },
+    { children: [{ ...children[0], mediaType: "VIDEO" }, children[1]] },
+    { children: [{ ...children[0], mediaUrl: "http://cdn.example.test/card.jpg" }, children[1]] },
+    { children: [{ ...children[0], altText: "wrong" }, children[1]] },
+    { children: [{ ...children[0], creationId: "wrong" }, children[1]] }
+  ];
+  for (const change of bad) {
+    assert.throws(() => complete(f, attempt, { ...good, media: [{ ...original, ...change }] }), /official_media_verification_failed/);
+  }
+});
+
+test("Threads reviewed alt text and child checkpoints are tamper resistant", () => {
+  const f = fixture("threads");
+  for (const images of [
+    f.job.content.images.map(({ altText, ...rest }) => rest),
+    f.job.content.images.map(image => ({ ...image, altText: "same unreviewed text" }))
+  ]) {
+    const altered = { ...f.job, content: { ...f.job.content, images } };
+    assert.throws(() => state.claimJob({ ledger: baseLedger(), expectedRemoteStateSha: COMMIT.before,
+      observedRemoteStateSha: COMMIT.before, jobBytes: Buffer.from(JSON.stringify(altered)), jobPath: f.jobPath,
+      verifiedAssets: f.verifiedAssets, selectedJobId: f.id, runId: "36129604025", runAttempt: 1,
+      actionId: "action-threads-alt", accountId: f.accountId, issuedAt: T0, validUntil: EXPIRY }), /job_assets_invalid/);
+  }
+  const full = attempted(f);
+  for (const edit of [
+    lock => { lock.childContainerIds.reverse(); },
+    lock => { lock.childContainerIds.push("7000"); },
+    lock => { lock.createAttempts = 1; },
+    lock => { lock.pendingChildIndex = 0; },
+    lock => { lock.containerId = "7000"; }
+  ]) {
+    const tampered = structuredClone(full.publishing.ledger);
+    edit(tampered.channelSplitV3.locks.threads);
+    assert.throws(() => state.checkedLedger(tampered));
+  }
+});
+
+test("Instagram official transcode no longer needs byte-equal CDN media", () => {
+  const f = fixture(), attempt = attempted(f), good = readback(f);
+  const transcoded = { ...good, media: [{ ...good.media[0], mediaUrl: "https://scontent.example.test/transcoded.jpg",
+    verifiedImageSha256: ["f".repeat(64)] }] };
+  assert.equal(complete(f, attempt, transcoded).receipt.mediaId, "112233445566");
 });
 
 test("audit chain, lock, claim and receipt tampering all fail closed", () => {

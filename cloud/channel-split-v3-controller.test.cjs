@@ -97,7 +97,7 @@ test('unresolved channel and global locks block without clearing them', () => {
   assert.equal(decision.channels.threads.reason, 'unresolved_global_lock');
 });
 
-test('recorded attempt and official text duplicate block the exact candidate, not a replacement', () => {
+test('recorded unresolved attempt and official text duplicate block the exact candidate, not a replacement', () => {
   const input = fixture(); input.jobs.push(instagramJob('ig-promo-002'));
   input.ledger.actions.push({ channel: 'instagram', jobId: 'ig-promo-001', status: 'completed' });
   let decision = decide(input);
@@ -107,6 +107,20 @@ test('recorded attempt and official text duplicate block the exact candidate, no
   input.instagramHistory.media.push(media('instagram', 'old', '2026-09-01T01:00:00Z', input.jobs[0].content.caption));
   decision = decide(input);
   assert.equal(decision.channels.instagram.reason, 'duplicate_official_copy');
+});
+
+test('a verified published receipt allows the next reviewed queue item, but an attempt alone does not', () => {
+  const input = fixture();
+  input.jobs.push(instagramJob('ig-promo-002'));
+  input.jobs[2].content.caption = 'A second, distinct reviewed Korean café situation at Language Cafe.';
+  input.ledger.actions.push({ strategyVersion: 'channel-split-v3', channel: 'instagram',
+    jobId: 'ig-promo-001', status: 'completed' });
+  assert.equal(decide(input).channels.instagram.reason, 'job_already_attempted');
+  input.ledger.receipts = [{ strategyVersion: 'channel-split-v3', status: 'published_verified',
+    channel: 'instagram', jobId: 'ig-promo-001', mediaId: '101' }];
+  assert.equal(decide(input).channels.instagram.selectedJobId, 'ig-promo-002');
+  input.jobs.pop();
+  assert.equal(decide(input).channels.instagram.reason, 'all_approved_jobs_published');
 });
 
 test('unknown v3 schema, strategy, and malformed approved content fail closed by channel', () => {

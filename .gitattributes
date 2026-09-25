@@ -1,0 +1,3 @@
+content-queue/instagram-promo/jobs/*.json text eol=lf
+content-queue/threads/jobs/*.json text eol=lf
+cloud/control/channel-split-v3-grants/*.json text eol=lf

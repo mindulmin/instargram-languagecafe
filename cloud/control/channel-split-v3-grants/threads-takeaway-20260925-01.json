@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "strategyVersion": "channel-split-v3",
+  "channel": "threads",
+  "jobId": "threads-takeaway-20260925-01",
+  "jobSha256": "16a0165aeec5d4b3a4de81e6cd538bb84e37169397412f72170464fa275fcd0d",
+  "copySha256": "63f1da7ac2d128eafa7767bd6a44a39fe2ca5d06485d47eb17b0a4c62bde0201",
+  "assets": [
+    {
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-01.jpg",
+      "sha256": "f78b812018635fd52d2d81ecd034538cd51de98a3fc6b99d44b4801dba193a55",
+      "altText": "At a warm café counter, the mint mascot gestures toward a takeaway cup and bag. The card teaches 포장해 주세요. as “To go, please.”"
+    },
+    {
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-02.jpg",
+      "sha256": "e11cab4bf995ed5216124ad71dc1d0faa85876ebacf5a8abd2db88c9e8d9dd66",
+      "altText": "A cup points toward a takeaway bag on a mint card; 포장해 주세요. means “To go, please.”"
+    },
+    {
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-03.jpg",
+      "sha256": "951beae98efe78c32fc2933a559b90ddfdb3f62825afbed61a7b165526fbaf2e",
+      "altText": "Two speech bubbles show a café exchange: staff asks 매장에서 드시나요? and customer answers 포장해 주세요."
+    },
+    {
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-04.jpg",
+      "sha256": "0efb67b12e1d5e6371273be08f499902c576b3c6052ed993ba390fb171c9fb8d",
+      "altText": "A drink moves from the counter toward a takeaway bag; use 포장해 주세요. when you want the ordered drink to go."
+    },
+    {
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-05.jpg",
+      "sha256": "2adecff5fde880932dd094270a174939b6d77ce7996624e50c85b1bbd8d1780a",
+      "altText": "A latte order and the prompt “For here?” leave a blank space for the learner to say the Korean takeaway answer aloud."
+    },
+    {
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-06.jpg",
+      "sha256": "c7a68d1e9babbf8b31593a333b0068cf9fca05bf9fc07c272db0ec980b3f014d",
+      "altText": "A three-minute recall path leads to a separate free Korean café mission; the direct link appears in the Threads caption."
+    }
+  ],
+  "review": {
+    "status": "passed",
+    "reviewer": "independent_editorial_controller_v1",
+    "reviewedAt": "2026-09-25T12:44:56Z",
+    "accuracy": "passed",
+    "completeness": "passed",
+    "practicality": "passed",
+    "revenueAlignment": "passed",
+    "evidence": "Six cards and phone-size preview reviewed for readable Korean and English. The polite expression and meaning match the café exchange; one direct Threads URL points to the current free mission without promising that the mission repeats this exact line. No revenue or conversion claim is made."
+  },
+  "siteOffer": {
+    "homepageUrl": "https://languagestudio.uk/",
+    "missionUrl": "https://languagestudio.uk/missions/korean-cafe/",
+    "checkedAt": "2026-09-25T12:41:24Z",
+    "homepageLinksMission": true,
+    "missionFreePilot": true
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "id": "threads-takeaway-20260925-01",
+  "channel": "threads",
+  "strategyVersion": "channel-split-v3",
+  "workflow": {
+    "status": "approved",
+    "autoPublish": true
+  },
+  "source": {
+    "campaign": "content-queue/threads/campaign-2026-09-25-01",
+    "expressionStatus": "editorially_reviewed_unique_candidate"
+  },
+  "content": {
+    "koreanExpression": "포장해 주세요.",
+    "englishExplanation": "To go, please.",
+    "text": "The barista asks if you’ll have your drink here. Answer: 포장해 주세요. — “To go, please.” Say it once, then try again in 3 minutes.\n\nWant another café turn? Language Cafe’s free Korean café mission lets you order a drink and answer the next question. Log in to start; no card required.\n\nTry it → https://languagestudio.uk/missions/korean-cafe/?utm_source=threads&utm_medium=organic&utm_campaign=language_cafe&utm_content=takeaway-reply-20260925",
+    "siteUrl": "https://languagestudio.uk/missions/korean-cafe/?utm_source=threads&utm_medium=organic&utm_campaign=language_cafe&utm_content=takeaway-reply-20260925",
+    "images": [
+      {
+        "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-01.jpg",
+        "sha256": "f78b812018635fd52d2d81ecd034538cd51de98a3fc6b99d44b4801dba193a55",
+        "altText": "At a warm café counter, the mint mascot gestures toward a takeaway cup and bag. The card teaches 포장해 주세요. as “To go, please.”"
+      },
+      {
+        "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-02.jpg",
+        "sha256": "e11cab4bf995ed5216124ad71dc1d0faa85876ebacf5a8abd2db88c9e8d9dd66",
+        "altText": "A cup points toward a takeaway bag on a mint card; 포장해 주세요. means “To go, please.”"
+      },
+      {
+        "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-03.jpg",
+        "sha256": "951beae98efe78c32fc2933a559b90ddfdb3f62825afbed61a7b165526fbaf2e",
+        "altText": "Two speech bubbles show a café exchange: staff asks 매장에서 드시나요? and customer answers 포장해 주세요."
+      },
+      {
+        "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-04.jpg",
+        "sha256": "0efb67b12e1d5e6371273be08f499902c576b3c6052ed993ba390fb171c9fb8d",
+        "altText": "A drink moves from the counter toward a takeaway bag; use 포장해 주세요. when you want the ordered drink to go."
+      },
+      {
+        "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-05.jpg",
+        "sha256": "2adecff5fde880932dd094270a174939b6d77ce7996624e50c85b1bbd8d1780a",
+        "altText": "A latte order and the prompt “For here?” leave a blank space for the learner to say the Korean takeaway answer aloud."
+      },
+      {
+        "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/threads/threads-takeaway-20260925-01-card-06.jpg",
+        "sha256": "c7a68d1e9babbf8b31593a333b0068cf9fca05bf9fc07c272db0ec980b3f014d",
+        "altText": "A three-minute recall path leads to a separate free Korean café mission; the direct link appears in the Threads caption."
+      }
+    ]
+  },
+  "review": {
+    "status": "passed",
+    "contentSha256": "2b9344d402de8667fca885562be708f48f2f5c60a2c6870cc5edd4e31abe14a7",
+    "koreanExpressionAccuracy": {
+      "status": "passed",
+      "evidence": "The polite line 포장해 주세요. naturally answers 매장에서 드시나요? for a takeaway café order."
+    },
+    "englishExplanation": {
+      "status": "passed",
+      "evidence": "To go, please. is a natural short English bridge for this exact polite Korean request."
+    },
+    "mobileLegibility": {
+      "status": "passed",
+      "evidence": "All six 1080x1350 cards and the 270-pixel phone contact sheet were visually checked; main copy and Hangul remain legible without clipping.",
+      "checkedImageCount": 6
+    },
+    "siteOfferAccuracy": {
+      "status": "passed",
+      "evidence": "The live Korean café mission is free, asks for login but no card, and has a café-order follow-up; the cards do not promise this exact expression is taught there.",
+      "url": "https://languagestudio.uk/missions/korean-cafe/",
+      "checkedAt": "2026-09-25T12:41:24Z"
+    }
+  },
+  "draftEvidence": {
+    "assetManifest": "content-queue/instagram-promo/campaign-2026-09-25-01/asset-hosting-evidence.json",
+    "captionSource": "content-queue/threads/campaign-2026-09-25-01/caption.txt",
+    "missionCheckedAt": "2026-09-25T12:41:24Z",
+    "notes": "The live mission offer, expression and artwork were reviewed. This job alone does not authorize publication without its separate matching grant."
+  }
+}

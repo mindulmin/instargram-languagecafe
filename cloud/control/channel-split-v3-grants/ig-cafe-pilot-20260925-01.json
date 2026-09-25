@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "strategyVersion": "channel-split-v3",
+  "channel": "instagram",
+  "jobId": "ig-cafe-pilot-20260925-01",
+  "jobSha256": "85586a28173d87b00eb1de969cce617d3fd3a03cb5baad5ffacdafaaf7a8b4fa",
+  "copySha256": "c6d4fe4c28e00f264854e93967e9505f23ce36d34326293ee27137a4685b982f",
+  "assets": [
+    {
+      "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/instagram/ig-cafe-pilot-20260925-01.jpg",
+      "sha256": "93099ddcf0b8c2fc12147497fe8559b6bcac188aeee552f4c630bc0a47cae844"
+    }
+  ],
+  "review": {
+    "status": "passed",
+    "reviewer": "independent_editorial_controller_v1",
+    "reviewedAt": "2026-09-25T12:44:56Z",
+    "accuracy": "passed",
+    "completeness": "passed",
+    "practicality": "passed",
+    "revenueAlignment": "passed",
+    "evidence": "Final 1080x1350 artwork and exact English caption reviewed together. The Korean reply is a polite takeaway request, the free Korean mission offer is current, and the caption sends visitors to the existing profile link without claiming a paid Korean product or measured outcome."
+  },
+  "siteOffer": {
+    "homepageUrl": "https://languagestudio.uk/",
+    "missionUrl": "https://languagestudio.uk/missions/korean-cafe/",
+    "checkedAt": "2026-09-25T12:41:24Z",
+    "homepageLinksMission": true,
+    "missionFreePilot": true
+  }
+}
