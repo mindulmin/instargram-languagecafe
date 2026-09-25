@@ -211,8 +211,8 @@
       "instagram": {
         "actionId": "v3:instagram:ig-cafe-pilot-20260925-01:36142919425",
         "claimHash": "55d629d748b8dbb36a801753538db2c5d8102e847aa4f74e3703bf9c5e693e6d",
-        "stage": "claimed",
-        "createAttempts": 0,
+        "stage": "create_attempted",
+        "createAttempts": 1,
         "publishAttempts": 0,
         "containerId": null
       },
@@ -420,6 +420,16 @@
         "claimHash": "55d629d748b8dbb36a801753538db2c5d8102e847aa4f74e3703bf9c5e693e6d",
         "stateHash": "0f3cec33565240e26b4eafb2a1f0acfd05e1446f64c173484ae1e359a4cd6e06",
         "hash": "ee6fbe897ae3763b9ac1a9a8d7a8ebe47b0d0ac94f6500cfd02036c4129c4460"
+      },
+      {
+        "sequence": 10,
+        "previousHash": "ee6fbe897ae3763b9ac1a9a8d7a8ebe47b0d0ac94f6500cfd02036c4129c4460",
+        "at": "2026-09-25T13:45:44.656Z",
+        "kind": "create_attempt_intent",
+        "channel": "instagram",
+        "actionId": "v3:instagram:ig-cafe-pilot-20260925-01:36142919425",
+        "stateHash": "80fcdce688d1833048b7be44f8714d5e464a037dad624be74353b9115795f1f4",
+        "hash": "deac2fc4d5001ad5c305f31e1e89914e58df6ac88a379f3831294c7304379099"
       }
     ]
   }
