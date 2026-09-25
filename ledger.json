@@ -208,7 +208,14 @@
     "schemaVersion": 1,
     "strategyVersion": "channel-split-v3",
     "locks": {
-      "instagram": null,
+      "instagram": {
+        "actionId": "v3:instagram:ig-cafe-pilot-20260925-01:36142919425",
+        "claimHash": "55d629d748b8dbb36a801753538db2c5d8102e847aa4f74e3703bf9c5e693e6d",
+        "stage": "claimed",
+        "createAttempts": 0,
+        "publishAttempts": 0,
+        "containerId": null
+      },
       "threads": {
         "actionId": "v3:threads:threads-takeaway-20260925-01:36141543126",
         "claimHash": "4036a747a1537c74f0069ee01124788918d8e14f0bbdc476906892126c90e140",
@@ -277,6 +284,33 @@
         "validUntil": "2026-09-25T13:57:40.673Z",
         "originStateSha": "592ae2b8ff664249d981f5c3435e516db609a403",
         "claimHash": "4036a747a1537c74f0069ee01124788918d8e14f0bbdc476906892126c90e140"
+      },
+      {
+        "schemaVersion": 1,
+        "strategyVersion": "channel-split-v3",
+        "channel": "instagram",
+        "action": "publish_one_instagram_promo",
+        "actionId": "v3:instagram:ig-cafe-pilot-20260925-01:36142919425",
+        "jobId": "ig-cafe-pilot-20260925-01",
+        "jobPath": "content-queue/instagram-promo/jobs/ig-cafe-pilot-20260925-01.json",
+        "jobSha256": "85586a28173d87b00eb1de969cce617d3fd3a03cb5baad5ffacdafaaf7a8b4fa",
+        "contentSha256": "084924f5b94b1d0c47548314f5f72822cc2d60f5f03dd934dc2efee32bf238b2",
+        "grantSha256": "a4a8e6105bb0dd160e6790046a8ace78437f6ed700b808107088dd1160812ea1",
+        "reviewer": "independent_editorial_controller_v1",
+        "copySha256": "c6d4fe4c28e00f264854e93967e9505f23ce36d34326293ee27137a4685b982f",
+        "assets": [
+          {
+            "url": "https://d0c26c95.language-cafe-instagram-assets.pages.dev/instagram/ig-cafe-pilot-20260925-01.jpg",
+            "sha256": "93099ddcf0b8c2fc12147497fe8559b6bcac188aeee552f4c630bc0a47cae844"
+          }
+        ],
+        "accountId": "17841476495914369",
+        "runId": "36142919425",
+        "runAttempt": "1",
+        "issuedAt": "2026-09-25T13:45:32.652Z",
+        "validUntil": "2026-09-25T14:10:32.652Z",
+        "originStateSha": "b035991005770b87ccc16d84d74b44c2fd25d057",
+        "claimHash": "55d629d748b8dbb36a801753538db2c5d8102e847aa4f74e3703bf9c5e693e6d"
       }
     ],
     "receipts": [],
@@ -375,6 +409,17 @@
         "assetSha256": "0efb67b12e1d5e6371273be08f499902c576b3c6052ed993ba390fb171c9fb8d",
         "stateHash": "9d3dbebaacb54c820f2956cf5922437b8379af34379675537cb019fabc24ed6d",
         "hash": "37a26838d93a964e58cd19498308549bd8715f5a3ce5319ab52e6a1b80269a62"
+      },
+      {
+        "sequence": 9,
+        "previousHash": "37a26838d93a964e58cd19498308549bd8715f5a3ce5319ab52e6a1b80269a62",
+        "at": "2026-09-25T13:45:32.652Z",
+        "kind": "claim",
+        "channel": "instagram",
+        "actionId": "v3:instagram:ig-cafe-pilot-20260925-01:36142919425",
+        "claimHash": "55d629d748b8dbb36a801753538db2c5d8102e847aa4f74e3703bf9c5e693e6d",
+        "stateHash": "0f3cec33565240e26b4eafb2a1f0acfd05e1446f64c173484ae1e359a4cd6e06",
+        "hash": "ee6fbe897ae3763b9ac1a9a8d7a8ebe47b0d0ac94f6500cfd02036c4129c4460"
       }
     ]
   }
